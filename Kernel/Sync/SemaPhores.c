@@ -1,20 +1,17 @@
 #include <Sync.h>   /* Synchronization primitives definitions */
 #include <SMP.h>    /* Symmetric multiprocessing functions */
 
-/*
- * InitializeSemaphore - Initialize a Semaphore Structure
+/**
+ * @brief Initialize a semaphore.
  *
- * Sets up a semaphore with an initial count and optional name. The semaphore
- * count determines how many concurrent accesses are allowed. A count of 1
- * creates a binary semaphore, while higher counts allow multiple concurrent
- * accesses.
+ * @details Sets the initial count, clears the wait queue, and initializes
+ * 			the internal queue lock. Assigns a name for debugging.
  *
- * Parameters:
- * - __Semaphore__: Pointer to the semaphore structure to initialize.
- * - __InitialCount__: Initial count value (must be >= 0).
- * - __Name__: Optional name string for the semaphore (can be NULL).
+ * @param __Semaphore__ Pointer to the Semaphore structure.
+ * @param __InitialCount__ Initial resource count.
+ * @param __Name__ Human-readable name for debugging.
  *
- * This function should be called before using a semaphore for the first time.
+ * @return void
  */
 void
 InitializeSemaphore(Semaphore* __Semaphore__, int32_t __InitialCount__, const char* __Name__)
@@ -25,37 +22,26 @@ InitializeSemaphore(Semaphore* __Semaphore__, int32_t __InitialCount__, const ch
     __Semaphore__->Name = __Name__;                 /* Assign name for debugging */
 }
 
-/*
- * AcquireSemaphore - Acquire Access to a Semaphore
+/**
+ * @brief Acquire a semaphore.
  *
- * Decrements the semaphore count, blocking if the count is already zero.
- * This operation is atomic and thread-safe across multiple CPUs. If the
- * semaphore count is greater than zero, it is decremented and the function
- * returns immediately. If the count is zero, the function spins until the
- * count becomes positive.
+ * @details Spins until the count is greater than zero, then decrements it atomically.
  *
- * Parameters:
- * - __Semaphore__: Pointer to the semaphore to acquire.
+ * @param __Semaphore__ Pointer to the Semaphore structure.
  *
- * Note: This function will block indefinitely if the semaphore is never
- * released by another thread.
+ * @return void
  */
 void
 AcquireSemaphore(Semaphore* __Semaphore__)
 {
     while (1)
     {
-        /*
-         * Atomically load the current count to check availability.
-         */
+        
         int32_t CurrentCount = __atomic_load_n(&__Semaphore__->Count, __ATOMIC_ACQUIRE);
 
         if (CurrentCount > 0)
         {
-            /*
-             * Attempt to decrement the count atomically.
-             * If successful, we have acquired the semaphore.
-             */
+            
             if (__atomic_compare_exchange_n(&__Semaphore__->Count, &CurrentCount,
                 CurrentCount - 1, false, __ATOMIC_ACQUIRE, __ATOMIC_RELAXED))
             {
@@ -69,57 +55,40 @@ AcquireSemaphore(Semaphore* __Semaphore__)
     }
 }
 
-/*
- * ReleaseSemaphore - Release a Semaphore
+/**
+ * @brief Release a semaphore.
  *
- * Increments the semaphore count, potentially allowing waiting threads to
- * proceed. This operation is atomic and signals to other threads that a
- * resource has been released or an event has occurred.
+ * @details Atomically increments the semaphore count, potentially unblocking waiters.
  *
- * Parameters:
- * - __Semaphore__: Pointer to the semaphore to release.
+ * @param __Semaphore__ Pointer to the Semaphore structure.
  *
- * Note: It is the caller's responsibility to ensure ReleaseSemaphore is only
- * called after a corresponding AcquireSemaphore call.
+ * @return void
  */
 void
 ReleaseSemaphore(Semaphore* __Semaphore__)
 {
-    /*
-     * Atomically increment the semaphore count.
-     * This may wake up waiting threads in AcquireSemaphore.
-     */
+    
     __atomic_fetch_add(&__Semaphore__->Count, 1, __ATOMIC_RELEASE);
 }
 
-/*
- * TryAcquireSemaphore - Attempt to Acquire Semaphore Without Blocking
+/**
+ * @brief Attempt to acquire a semaphore without blocking.
  *
- * Attempts to decrement the semaphore count without blocking. Returns
- * immediately with success or failure status. This allows threads to
- * test semaphore availability without waiting.
+ * @details Decrements the count if greater than zero, otherwise fails immediately.
  *
- * Returns:
- * - true: Semaphore was successfully acquired (count decremented).
- * - false: Semaphore is not available (count is zero).
+ * @param __Semaphore__ Pointer to the Semaphore structure.
  *
- * Parameters:
- * - __Semaphore__: Pointer to the semaphore to attempt to acquire.
+ * @return true if acquired successfully, false otherwise.
  */
 bool
 TryAcquireSemaphore(Semaphore* __Semaphore__)
 {
-    /*
-     * Atomically load the current count to check availability.
-     */
+    
     int32_t CurrentCount = __atomic_load_n(&__Semaphore__->Count, __ATOMIC_ACQUIRE);
 
     if (CurrentCount > 0)
     {
-        /*
-         * Attempt to decrement the count atomically.
-         * If successful, we have acquired the semaphore.
-         */
+        
         if (__atomic_compare_exchange_n(&__Semaphore__->Count, &CurrentCount,
             CurrentCount - 1, false, __ATOMIC_ACQUIRE, __ATOMIC_RELAXED))
         {

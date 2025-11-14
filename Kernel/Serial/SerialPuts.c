@@ -1,55 +1,46 @@
 #include <Serial.h>  /* Serial port constants and register definitions */
 
-/*
- * SerialPutChar - Transmit a Single Character via Serial Port
+/**
+ * @brief Send a single character over the serial port.
  *
- * Transmits a single character through the serial port (COM1). The function
- * waits for the UART's transmit buffer to be empty before sending the character,
- * ensuring that data is not lost due to buffer overflow.
+ * @details Waits until the transmitter holding register is empty,
+ * 			then writes the character to the serial data register.
  *
- * Parameters:
- * - __Char__: The character to transmit.
+ * @param __Char__ Character to send.
  *
- * Note: This function uses busy-waiting on the Line Status Register's
- * Transmitter Holding Register Empty (THRE) bit (bit 5) to ensure the
- * previous character has been transmitted before sending the next one.
+ * @return void
+ *
+ * @note Blocks until the character can be transmitted.
  */
 void
 SerialPutChar(char __Char__)
 {
-    /*
-     * Poll the Line Status Register until the transmit buffer is empty.
-     * Bit 5 (0x20) indicates Transmitter Holding Register Empty (THRE).
-     */
+    
     uint8_t Status;
     do {
         __asm__ volatile("inb %1, %0" : "=a"(Status) : "Nd"((uint16_t)(SerialPort1 + SerialLineStatusReg)));
     } while ((Status & 0x20) == 0);
 
-    /*
-     * Transmit the character by writing to the Data Register.
-     */
+    
     __asm__ volatile("outb %0, %1" : : "a"((uint8_t)__Char__), "Nd"((uint16_t)(SerialPort1 + SerialDataReg)));
 }
 
-/*
- * SerialPutString - Transmit a Null-Terminated String via Serial Port
+/**
+ * @brief Send a null-terminated string over the serial port.
  *
- * Transmits a complete null-terminated string through the serial port by
- * iteratively calling SerialPutChar for each character in the string.
+ * @details Iterates through the string and sends each character
+ * 			using SerialPutChar until the null terminator is reached.
  *
- * Parameters:
- * - __String__: Pointer to the null-terminated string to transmit.
+ * @param __String__ Pointer to the string to send.
  *
- * Note: The function stops transmission when it encounters the null terminator
- * ('\0'). It assumes the input string is properly null-terminated.
+ * @return void
+ *
+ * @note Useful for logging and debugging messages.
  */
 void
 SerialPutString(const char* __String__)
 {
-    /*
-     * Iterate through each character in the string until null terminator.
-     */
+    
     while (*__String__)
     {
         SerialPutChar(*__String__);

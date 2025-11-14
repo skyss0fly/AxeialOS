@@ -1,27 +1,6 @@
 #include <AllTypes.h>
 #include <KrnFont.h>
 
-/*
- * Kernel Font Map - Early Boot Graphics Font
- *
- * This file contains the bitmap definitions for all characters supported by
- * the kernel's early boot graphics console. Each character is represented
- * as a 16-element array of uint8_t values, where each byte represents one
- * row of the 8x16 pixel character bitmap.
- *
- * Character ranges:
- * - 0x00-0x1F: Control characters (non-printable)
- * - 0x20-0x7F: Standard ASCII printable characters
- * - 0x80-0xFF: Extended/custom characters and padding
- *
- * Font dimensions: 8 pixels wide x 16 pixels tall
- * Memory layout: Each character occupies 16 bytes (one byte per row)
- * Bit order: MSB (bit 7) is leftmost pixel, LSB (bit 0) is rightmost
- *
- * Used by: Boot console, early kernel graphics output
- * Thread safety: Read-only data, safe for concurrent access
- */
-
 const 
 uint8_t 
 KrnlFontMap[MaxFontEntries][MaxFontMap]=

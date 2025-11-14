@@ -1,66 +1,51 @@
 #include <Timer.h>  /* Timer-related definitions and constants */
 
-/*
- * ReadMsr - Read a Model-Specific Register
+/**
+ * @brief Read a Model-Specific Register (MSR).
  *
- * Reads the value of a specified MSR using the RDMSR instruction. The MSR
- * value is returned as a 64-bit unsigned integer, with the high 32 bits
- * coming from EDX and the low 32 bits from EAX.
+ * @details Executes the `rdmsr` instruction to read the 64-bit value of the given MSR.
+ * 			The result is constructed from the low 32 bits (EAX) and high 32 bits (EDX).
  *
- * Parameters:
- * - __Msr__: The MSR index to read (32-bit unsigned integer).
+ * @param __Msr__ The identifier of the MSR to read.
  *
- * Returns:
- * - The 64-bit value read from the MSR.
+ * @return The 64-bit value stored in the specified MSR.
  *
- * Note: This function requires appropriate privilege level (typically ring 0)
- * and may cause a general protection fault if the MSR is not accessible.
+ * @note MSRs are CPU-specific registers used for configuration and status.
+ *       Accessing invalid MSRs may cause a fault.
  */
 uint64_t
 ReadMsr(uint32_t __Msr__)
 {
     uint32_t Low, High;
 
-    /*
-     * Execute RDMSR instruction.
-     * Input: ECX = MSR index
-     * Output: EDX:EAX = MSR value (High:Low)
-     */
+    
     __asm__ volatile("rdmsr" : "=a"(Low), "=d"(High) : "c"(__Msr__));
 
-    /*
-     * Combine high and low 32-bit parts into a single 64-bit value.
-     */
+    
     return ((uint64_t)High << 32) | Low;
 }
 
-/*
- * WriteMsr - Write to a Model-Specific Register
+/**
+ * @brief Write a value to a Model-Specific Register (MSR).
  *
- * Writes a 64-bit value to a specified MSR using the WRMSR instruction.
- * The value is decomposed into high and low 32-bit parts for the EDX:EAX
- * register pair.
+ * @details Executes the `wrmsr` instruction to write a 64-bit value into the given MSR.
+ * 			The value is split into low (EAX) and high (EDX) 32-bit parts before writing.
  *
- * Parameters:
- * - __Msr__: The MSR index to write to (32-bit unsigned integer).
- * - __Value__: The 64-bit value to write to the MSR.
+ * @param __Msr__   The identifier of the MSR to write to.
+ * @param __Value__ The 64-bit value to store in the MSR.
  *
- * Note: This function requires appropriate privilege level (typically ring 0)
- * and may cause a general protection fault if the MSR is not accessible or
- * if the value is invalid for the specific MSR.
+ * @return void
+ *
+ * @note Writing to certain MSRs can change CPU behavior and should be done
+ *       with caution. Incorrect writes may cause system instability.
  */
 void
 WriteMsr(uint32_t __Msr__, uint64_t __Value__)
 {
-    /*
-     * Decompose the 64-bit value into high and low 32-bit parts.
-     */
+    
     uint32_t Low = (uint32_t)__Value__;
     uint32_t High = (uint32_t)(__Value__ >> 32);
 
-    /*
-     * Execute WRMSR instruction.
-     * Input: ECX = MSR index, EDX:EAX = MSR value (High:Low)
-     */
+    
     __asm__ volatile("wrmsr" : : "a"(Low), "d"(High), "c"(__Msr__));
 }

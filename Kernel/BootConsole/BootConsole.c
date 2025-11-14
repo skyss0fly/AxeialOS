@@ -1,28 +1,28 @@
 #include <BootConsole.h>
 #include <Serial.h>
 
-/*
- * Global Console State
- *
- * Maintains the current state of the boot console including framebuffer
- * dimensions, cursor position, colors, and rendering parameters.
+/**
+ * TODO: Probably Add Double buffering because Its slow.
+ * 		 Even tho it is temp' but will be nice to have.
  */
+
+/** @brief Global (Early Boot)Console */
 BootConsole Console = {0};
 
-/*
- * KickStartConsole - Initialize the Boot Graphics Console
+/**
+ * @brief Initialize the boot console.
  *
- * Sets up the console with the provided framebuffer and dimensions.
- * Calculates console character grid size based on font dimensions.
- * Initializes cursor position to top-left and sets default colors.
+ * @details Sets up the framebuffer console with dimensions, cursor position,
+ * 			and default text/background colors. Calculates the number of
+ * 			character columns and rows based on font size.
  *
- * Parameters:
- * - __FrameBuffer__: Pointer to the linear framebuffer memory
- * - __CW__: Framebuffer width in pixels
- * - __CH__: Framebuffer height in pixels
+ * @param __FrameBuffer__ Pointer to the framebuffer memory (32-bit pixels).
+ * @param __CW__ Width of the framebuffer in pixels.
+ * @param __CH__ Height of the framebuffer in pixels.
  *
- * Note: Console dimensions are calculated as CW/FontW x CH/FontH characters.
- * Default colors are white text on black background.
+ * @return void
+ *
+ * @note Must be called before any console output functions.
  */
 void
 KickStartConsole(
@@ -41,15 +41,13 @@ uint32_t __CH__)
     Console.BGColor = 0x000000;  /* Black background */
 }
 
-/*
- * ClearConsole - Clear the Entire Console Screen
+/**
+ * @brief Clear the console.
  *
- * Fills the entire framebuffer with the current background color,
- * effectively clearing all text and graphics from the screen.
- * Resets the cursor position to the top-left corner (0,0).
+ * @details Fills the entire framebuffer with the background color and resets
+ * 			the cursor to the top-left position.
  *
- * This function performs a complete screen refresh and should be
- * used when a full console reset is needed.
+ * @return void
  */
 void
 ClearConsole(void)
@@ -65,20 +63,13 @@ ClearConsole(void)
     Console.CursorY = 0;
 }
 
-/*
- * ScrollConsole - Scroll the Console Screen Up by One Line
+/**
+ * @brief Scroll the console up by one line.
  *
- * Moves all text lines up by one character row to make space for new text
- * at the bottom. The top line is discarded, and the bottom line is cleared
- * with the background color. This implements the classic terminal scroll
- * behavior when reaching the bottom of the screen.
+ * @details Moves all framebuffer lines up by one character row, discarding the
+ * 			top line. Clears the newly exposed bottom line with the background color.
  *
- * The function operates at the pixel level, copying entire character blocks
- * (FontW x FontH pixels) from their current position to one row above.
- * After scrolling, the newly exposed bottom line is filled with background color.
- *
- * Performance note: This is a pixel-by-pixel copy operation that could be
- * optimized with larger block copies, but maintains simplicity for early boot.
+ * @return void
  */
 void
 ScrollConsole(void)
@@ -117,28 +108,18 @@ ScrollConsole(void)
     }
 }
 
-/*
- * PutChar - Output a Single Character to the Console
+/**
+ * @brief Output a single character to the console.
  *
- * Renders a character to the framebuffer at the current cursor position
- * and mirrors the output to the serial port for debugging. Handles
- * special control characters (\n, \r) and automatically manages cursor
- * positioning, line wrapping, and scrolling.
+ * @details Mirrors the character to the serial port for debugging.
+ * 			Handles newline (`\n`) and carriage return (`\r`).
+ * 			Renders printable characters to the framebuffer.
+ * 			Advances the cursor, wrapping at the right edge.
+ * 			Scrolls the console when reaching the bottom.
  *
- * Control character handling:
- * - '\n' (newline): Moves cursor to start of next line
- * - '\r' (carriage return): Moves cursor to start of current line
- * - Other characters: Renders using bitmap font and advances cursor
+ * @param __Char__ Character to output.
  *
- * Automatic behaviors:
- * - Line wrapping when cursor reaches right edge
- * - Screen scrolling when cursor reaches bottom
- * - Serial port mirroring for all characters
- *
- * Parameters:
- * - __Char__: The character to output (including control characters)
- *
- * Thread safety: Serial output is protected by spinlock in SerialPutChar.
+ * @return void
  */
 void
 PutChar(char __Char__)
@@ -179,21 +160,14 @@ PutChar(char __Char__)
     }
 }
 
-/*
- * PutPrint - Output a Null-Terminated String to the Console
+/**
+ * @brief Output a null-terminated string to the console.
  *
- * Iterates through each character in the provided string and outputs
- * it to the console using PutChar. This handles all control characters
- * and formatting automatically, including newlines and cursor management.
+ * @details Iterates through the string and calls PutChar for each character.
  *
- * The function stops when it encounters the null terminator ('\0').
- * Each character is processed individually, allowing for proper handling
- * of control sequences and automatic scrolling/wrapping.
+ * @param __String__ Pointer to the string to output.
  *
- * Parameters:
- * - __String__: Pointer to null-terminated string to output
- *
- * This is the primary string output function used by the printf system.
+ * @return void
  */
 void
 PutPrint(const char *__String__)
@@ -206,19 +180,16 @@ PutPrint(const char *__String__)
     }
 }
 
-/*
- * SetBGColor - Set Console Text and Background Colors
+/**
+ * @brief Set console foreground and background colors.
  *
- * Updates the current text (foreground) and background colors used
- * for subsequent character rendering. Colors are specified as 32-bit
- * RGBA values, with the framebuffer format determining interpretation.
+ * @details Updates the text (foreground) and background color values used
+ * 			for subsequent rendering.
  *
- * Parameters:
- * - __FG__: 32-bit foreground (text) color value
- * - __BG__: 32-bit background color value
+ * @param __FG__ Foreground (text) color in 32-bit ARGB.
+ * @param __BG__ Background color in 32-bit ARGB.
  *
- * Note: Color changes affect all subsequent PutChar/PutPrint calls
- * until changed again. Existing text on screen is not redrawn.
+ * @return void
  */
 void
 SetBGColor(uint32_t __FG__, uint32_t __BG__)
@@ -227,20 +198,16 @@ SetBGColor(uint32_t __FG__, uint32_t __BG__)
     Console.BGColor = __BG__;
 }
 
-/*
- * SetCursor - Set the Console Cursor Position
+/**
+ * @brief Set the console cursor position.
  *
- * Moves the text cursor to the specified character coordinates.
- * Coordinates are bounds-checked to ensure they remain within
- * the console's character grid dimensions.
+ * @details Updates the cursor coordinates with bounds checking to ensure
+ * 			they remain within the console’s dimensions.
  *
- * Parameters:
- * - __CurX__: X coordinate (column) in character units (0-based)
- * - __CurY__: Y coordinate (row) in character units (0-based)
+ * @param __CurX__ New cursor X position (column).
+ * @param __CurY__ New cursor Y position (row).
  *
- * Note: Invalid coordinates (outside console bounds) are ignored.
- * The cursor position affects where subsequent PutChar/PutPrint
- * calls will render text.
+ * @return void
  */
 void
 SetCursor(uint32_t __CurX__, uint32_t __CurY__)

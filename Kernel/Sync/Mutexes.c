@@ -1,18 +1,16 @@
 #include <Sync.h>   /* Synchronization primitives definitions */
 #include <SMP.h>    /* Symmetric multiprocessing functions */
 
-/*
- * InitializeMutex - Initialize a Mutex Structure
+/**
+ * @brief Initialize a mutex.
  *
- * Sets up a mutex to its initial unlocked state. The mutex is initialized with
- * no owner (set to kernel/0xFFFFFFFF), zero recursion count, and unlocked state.
- * A name can be assigned for debugging purposes.
+ * @details Sets the lock to unlocked, clears the owner, resets recursion count,
+ * 			and assigns a name for debugging.
  *
- * Parameters:
- * - __Mutex__: Pointer to the mutex structure to initialize.
- * - __Name__: Optional name string for the mutex (can be NULL).
+ * @param __Mutex__ Pointer to the Mutex structure.
+ * @param __Name__ Human-readable name for debugging.
  *
- * This function should be called before using a mutex for the first time.
+ * @return void
  */
 void
 InitializeMutex(Mutex* __Mutex__, const char* __Name__)
@@ -23,42 +21,29 @@ InitializeMutex(Mutex* __Mutex__, const char* __Name__)
     __Mutex__->Name = __Name__;             /* Assign name for debugging */
 }
 
-/*
- * AcquireMutex - Acquire Exclusive Access to a Mutex
+/**
+ * @brief Acquire a mutex.
  *
- * Attempts to acquire the mutex, blocking until it becomes available. If the
- * current CPU already owns the mutex, the recursion count is incremented
- * instead of blocking (recursive locking).
+ * @details Spins until the lock becomes available. Supports recursive locking
+ * 			if the same CPU already owns the mutex.
  *
- * The function uses an atomic compare-and-exchange operation to acquire the
- * lock, ensuring thread-safety across multiple CPUs. If the lock is already
- * held by another CPU, the function spins with pause instructions to reduce
- * CPU usage while waiting.
+ * @param __Mutex__ Pointer to the Mutex structure.
  *
- * Parameters:
- * - __Mutex__: Pointer to the mutex to acquire.
- *
- * Note: This function will block indefinitely if a deadlock occurs.
+ * @return void
  */
 void
 AcquireMutex(Mutex* __Mutex__)
 {
     uint32_t CpuId = GetCurrentCpuId();
 
-    /*
-     * Check if the current CPU already owns this mutex.
-     * If so, increment the recursion count and return (recursive locking).
-     */
+    
     if (__Mutex__->Owner == CpuId)
     {
         __Mutex__->RecursionCount++;
         return;
     }
 
-    /*
-     * Attempt to acquire the lock using atomic operations.
-     * Spin until the lock becomes available.
-     */
+    
     while (1)
     {
         uint32_t Expected = 0;  /* Expect the lock to be free (0) */
@@ -76,39 +61,29 @@ AcquireMutex(Mutex* __Mutex__)
     }
 }
 
-/*
- * ReleaseMutex - Release a Previously Acquired Mutex
+/**
+ * @brief Release a mutex.
  *
- * Releases the mutex if the current CPU is the owner. If the mutex was acquired
- * recursively, decrements the recursion count instead of fully releasing it.
- * Only when the recursion count reaches zero is the mutex actually unlocked.
+ * @details Decrements recursion count. If it reaches zero, clears the owner
+ * 			and unlocks the mutex.
  *
- * Parameters:
- * - __Mutex__: Pointer to the mutex to release.
+ * @param __Mutex__ Pointer to the Mutex structure.
  *
- * Note: If a CPU attempts to release a mutex it doesn't own, the function
- * returns silently without action.
+ * @return void
  */
 void
 ReleaseMutex(Mutex* __Mutex__)
 {
     uint32_t CpuId = GetCurrentCpuId();
 
-    /*
-     * Verify that the current CPU owns this mutex.
-     * If not, ignore the release attempt.
-     */
+    
     if (__Mutex__->Owner != CpuId)
         return;
 
-    /*
-     * Decrement the recursion count.
-     */
+    
     __Mutex__->RecursionCount--;
 
-    /*
-     * If recursion count reaches zero, fully release the mutex.
-     */
+    
     if (__Mutex__->RecursionCount == 0)
     {
         __Mutex__->Owner = 0xFFFFFFFF;  /* Reset owner to kernel/none */
@@ -116,36 +91,29 @@ ReleaseMutex(Mutex* __Mutex__)
     }
 }
 
-/*
- * TryAcquireMutex - Attempt to Acquire Mutex Without Blocking
+/**
+ * @brief Attempt to acquire a mutex without blocking.
  *
- * Attempts to acquire the mutex without blocking. Returns immediately with
- * success or failure status. Supports recursive locking like AcquireMutex.
+ * @details Acquires the lock if free, or increments recursion count if already owned
+ * 			by the current CPU.
  *
- * Returns:
- * - true: Mutex was successfully acquired (or recursion count incremented).
- * - false: Mutex is held by another CPU and could not be acquired.
+ * @param __Mutex__ Pointer to the Mutex structure.
  *
- * Parameters:
- * - __Mutex__: Pointer to the mutex to attempt to acquire.
+ * @return true if acquired successfully, false otherwise.
  */
 bool
 TryAcquireMutex(Mutex* __Mutex__)
 {
     uint32_t CpuId = GetCurrentCpuId();
 
-    /*
-     * Check for recursive acquisition.
-     */
+    
     if (__Mutex__->Owner == CpuId)
     {
         __Mutex__->RecursionCount++;
         return true;
     }
 
-    /*
-     * Attempt to acquire the lock atomically without blocking.
-     */
+    
     uint32_t Expected = 0;
     if (__atomic_compare_exchange_n(&__Mutex__->Lock, &Expected, 1,
         false, __ATOMIC_ACQUIRE, __ATOMIC_RELAXED))

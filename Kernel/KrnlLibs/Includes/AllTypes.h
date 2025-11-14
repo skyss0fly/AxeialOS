@@ -15,15 +15,15 @@
 
 #else
 
-	#include "__aln__.h"
-	#include "__args__.h"
-	#include "__bool__.h"
-	#include "__def__.h"
-	#include "__fenv__.h"
-	#include "__flt__.h"
-	#include "__i646__.h"
-	#include "__int__.h"
-	#include "__lims__.h"
-	#include "__noret__.h"
+	#include "LocalTypes/__aln__.h"
+	#include "LocalTypes/__args__.h"
+	#include "LocalTypes/__bool__.h"
+	#include "LocalTypes/__def__.h"
+	#include "LocalTypes/__fenv__.h"
+	#include "LocalTypes/__flt__.h"
+	#include "LocalTypes/__i646__.h"
+	#include "LocalTypes/__int__.h"
+	#include "LocalTypes/__lims__.h"
+	#include "LocalTypes/__noret__.h"
 	
 #endif

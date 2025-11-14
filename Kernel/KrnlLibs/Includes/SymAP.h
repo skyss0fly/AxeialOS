@@ -8,7 +8,7 @@
 #include <PerCPUData.h>
 
 /**
- * AP Startup Constants (Intel MP Specification)
+ * AP Startup Constants
  */
 #define ApTrampolineBase        0x7000
 #define ApStackSize             0x4000
@@ -23,7 +23,7 @@
 #define IpiStartup              0x000600
 
 /**
- * Trampoline Signature
+ * @deprecated Trampoline Signature
  */
 #define ApTrampolineSignature   0xDEADBEEF
 
@@ -50,15 +50,17 @@ enum
 typedef
 struct
 {
+
     uint32_t ApicId;
     uint32_t CpuNumber;
     ApStatus Status;
     uint64_t StackTop;
     volatile uint32_t Started;
+
 } ApInfo;
 
 /**
- * Trampoline Data Layout
+ * @deprecated Tramp Layout
  */
 #define TrampolineSignatureOffset  0x200
 #define TrampolinePageDirOffset    0x208
@@ -73,12 +75,6 @@ struct
 extern ApInfo ApProcessors[MaxCPUs];
 extern volatile uint32_t ApStartupCount;
 extern SpinLock SMPLock;
-
-/**
- * External Trampoline Symbols
- */
-extern uint8_t trampoline_start[];
-extern uint8_t trampoline_end[];
 
 /**
  * Per-CPU TSS Selectors

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <AllTypes.h>
+#include <KExports.h>
 
 /**
  * Spinlock
@@ -59,3 +60,21 @@ bool TryAcquireSemaphore(Semaphore* __Semaphore__);
  * Global Console Lock
  */
 extern SpinLock ConsoleLock;
+
+/**
+ * Public
+ */
+KEXPORT(InitializeSpinLock);
+KEXPORT(AcquireSpinLock);
+KEXPORT(ReleaseSpinLock);
+KEXPORT(TryAcquireSpinLock);
+
+KEXPORT(InitializeMutex);
+KEXPORT(AcquireMutex);
+KEXPORT(ReleaseMutex);
+KEXPORT(TryAcquireMutex);
+
+KEXPORT(InitializeSemaphore);
+KEXPORT(AcquireSemaphore);
+KEXPORT(ReleaseSemaphore);
+KEXPORT(TryAcquireSemaphore);

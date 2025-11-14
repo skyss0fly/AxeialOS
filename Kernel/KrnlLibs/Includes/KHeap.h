@@ -71,7 +71,7 @@ struct
 extern KernelHeapManager KHeap;
 
 /**
- * Cor
+ * Core
  */
 void InitializeKHeap(void);
 void* KMalloc(size_t __Size__);
@@ -83,3 +83,9 @@ void KFree(void* __Ptr__);
 SlabCache* GetSlabCache(size_t __Size__);
 Slab* AllocateSlab(uint32_t __ObjectSize__);
 void FreeSlab(Slab* __Slab__);
+
+/**
+ * Public
+ */
+KEXPORT(KMalloc);
+KEXPORT(KFree);

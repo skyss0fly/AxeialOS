@@ -1,16 +1,16 @@
 #include <PMM.h>
 
-/*
- * InitializeBitmap - Set up the PMM allocation bitmap
+/**
+ * @brief Initialize the PMM allocation bitmap.
  *
- * This function initializes the memory allocation bitmap by:
- * 1. Calculating the required bitmap size based on total pages
- * 2. Finding a suitable location in usable physical memory
- * 3. Mapping the bitmap to virtual memory for access
- * 4. Clearing all bits to indicate all pages are initially free
+ * @details Calculates required bitmap size based on total pages.
+ * 			Finds a suitable usable memory region to store the bitmap.
+ * 			Maps the bitmap into virtual memory.
+ * 			Initializes all bits to zero (free).
  *
- * The bitmap must be placed in physical memory and protected from
- * allocation to prevent self-corruption.
+ * @return void
+ *
+ * @note Must be called before any allocations are performed.
  */
 void
 InitializeBitmap(void)
@@ -50,14 +50,12 @@ InitializeBitmap(void)
     PSuccess("PMM bitmap initialized at 0x%016lx\n", BitmapPhys);
 }
 
-/*
- * SetBitmapBit - Mark a page as allocated
+/**
+ * @brief Mark a page as used in the bitmap.
  *
- * Sets the bit corresponding to the specified page index, indicating
- * that the page is now in use and unavailable for allocation.
+ * @param __PageIndex__ Index of the page to mark.
  *
- * Parameters:
- *   __PageIndex__ - Index of the page to mark as used
+ * @return void
  */
 void
 SetBitmapBit(uint64_t __PageIndex__)
@@ -67,14 +65,12 @@ SetBitmapBit(uint64_t __PageIndex__)
     Pmm.Bitmap[ByteIndex] |= (1ULL << BitIndex);
 }
 
-/*
- * ClearBitmapBit - Mark a page as free
+/**
+ * @brief Mark a page as free in the bitmap.
  *
- * Clears the bit corresponding to the specified page index, indicating
- * that the page is now available for allocation.
+ * @param __PageIndex__ Index of the page to clear.
  *
- * Parameters:
- *   __PageIndex__ - Index of the page to mark as free
+ * @return void
  */
 void
 ClearBitmapBit(uint64_t __PageIndex__)
@@ -84,17 +80,12 @@ ClearBitmapBit(uint64_t __PageIndex__)
     Pmm.Bitmap[ByteIndex] &= ~(1ULL << BitIndex);
 }
 
-/*
- * TestBitmapBit - Check if a page is allocated
+/**
+ * @brief Test whether a page is marked as used.
  *
- * Tests the bit corresponding to the specified page index to determine
- * if the page is currently allocated or free.
+ * @param __PageIndex__ Index of the page to test.
  *
- * Parameters:
- *   __PageIndex__ - Index of the page to check
- *
- * Returns:
- *   1 if page is allocated (bit set), 0 if free (bit clear)
+ * @return 1 if the page is used, 0 if free. (Bool?)
  */
 int
 TestBitmapBit(uint64_t __PageIndex__)

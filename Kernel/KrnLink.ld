@@ -13,6 +13,14 @@ SECTIONS
     {
         *(.rodata .rodata.*)
     }
+
+	/*Export table for the .ko / Drivers*/
+	.kexports : ALIGN(4K)
+	{ 
+		__start_kexports = .;
+		KEEP(*(.kexports))	/*Consider checking KExports.h*/
+		__stop_kexports = .;
+	}
     
     .data : ALIGN(4K)
     {

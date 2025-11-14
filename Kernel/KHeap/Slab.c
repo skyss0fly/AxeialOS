@@ -1,20 +1,14 @@
 #include <KHeap.h>
 
-/*
- * GetSlabCache - Find Appropriate Slab Cache for Size
+/**
+ * @brief Retrieve the appropriate slab cache for a given size.
  *
- * Searches through the available slab caches to find the smallest cache
- * that can accommodate objects of the requested size. Uses a first-fit
- * strategy to minimize internal fragmentation.
+ * @details Iterates through the available slab caches and returns the smallest
+ * 			cache that can fit the requested allocation size.
  *
- * Parameters:
- * - __Size__: Size of object to allocate
+ * @param __Size__ Requested allocation size in bytes.
  *
- * Returns:
- * - Pointer to appropriate SlabCache, or NULL if size is too large
- *
- * Note: Sizes larger than the largest cache (2048 bytes) should be
- * handled by direct page allocation, not slab allocation.
+ * @return Pointer to the matching SlabCache, or NULL if none found.
  */
 SlabCache*
 GetSlabCache(size_t __Size__)
@@ -28,25 +22,16 @@ GetSlabCache(size_t __Size__)
     return 0;  /*No suitable cache found*/
 }
 
-/*
- * AllocateSlab - Create a New Slab for Object Allocation
+/**
+ * @brief Allocate a new slab.
  *
- * Allocates a single page from the physical memory manager and initializes
- * it as a slab containing objects of the specified size. Creates a linked
- * list of free objects within the slab.
+ * @details Allocates a single physical page and initializes it as a slab:
+ * 			Sets metadata fields (object size, free count, magic).
+ * 			Builds a free list of objects within the slab.
  *
- * The slab structure is placed at the beginning of the page, followed by
- * the objects. The free list is built as a singly-linked list in reverse
- * order (last object first) for efficient LIFO allocation.
+ * @param __ObjectSize__ Size of each object in the slab.
  *
- * Parameters:
- * - __ObjectSize__: Size of each object in the slab
- *
- * Returns:
- * - Pointer to initialized Slab structure, or NULL on failure
- *
- * Memory layout:
- * [Slab header | Object 0 | Object 1 | ... | Object N]
+ * @return Pointer to the newly allocated Slab, or NULL if out of memory.
  */
 Slab*
 AllocateSlab(uint32_t __ObjectSize__)
@@ -87,21 +72,14 @@ AllocateSlab(uint32_t __ObjectSize__)
     return NewSlab;
 }
 
-/*
- * FreeSlab - Deallocate a Slab
+/**
+ * @brief Free a slab.
  *
- * Returns a slab's page back to the physical memory manager. This function
- * should only be called when all objects in the slab have been freed and
- * the slab is no longer needed.
+ * @details Converts the slab’s virtual address back to physical and frees the page.
  *
- * Parameters:
- * - __Slab__: Pointer to the Slab to free
+ * @param __Slab__ Pointer to the slab to free.
  *
- * Returns: None
- *
- * Note: This function does not validate that the slab is empty or perform
- * any cleanup of the slab's internal structures. It assumes the caller
- * has properly managed the slab's lifecycle.
+ * @return void
  */
 void
 FreeSlab(Slab* __Slab__)

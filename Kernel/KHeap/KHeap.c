@@ -1,31 +1,18 @@
 #include <KHeap.h>
 
-/*
- * Kernel Heap Manager Global Instance
- *
- * The global kernel heap manager that coordinates all heap operations.
- * Uses a slab allocator design with multiple cache sizes for efficient
- * small object allocation and direct page allocation for large objects.
- */
+/** @brief Global KHeap State */
 KernelHeapManager KHeap;
 
-/*
- * InitializeKHeap - Initialize the Kernel Heap System
+
+/**
+ * @brief Initialize the kernel heap manager.
  *
- * Sets up the slab allocator with predefined cache sizes for small objects.
- * The heap uses a multi-cache slab allocator where objects of different
- * sizes are managed by separate caches to reduce fragmentation and improve
- * allocation performance.
+ * @details Sets up slab caches for standard object sizes (powers of two).
+ *			Each cache is initialized with its object size and capacity.
  *
- * Cache sizes: 16, 32, 64, 128, 256, 512, 1024, 2048 bytes
- * Objects larger than 2048 bytes are allocated directly from the PMM.
+ * @return void
  *
- * Parameters: None
- * Returns: None
- *
- * Side effects:
- * - Initializes global KHeap structure
- * - Sets up slab caches for different object sizes
+ * @note Must be called before using KMalloc or KFree.
  */
 void
 InitializeKHeap(void)
@@ -58,22 +45,16 @@ InitializeKHeap(void)
     PSuccess("KHeap initialized with %u slab caches\n", KHeap.CacheCount);
 }
 
-/*
- * KMalloc - Kernel Memory Allocation
+/**
+ * @brief Allocate memory from the kernel heap.
  *
- * Allocates memory from the kernel heap. Uses slab allocation for small objects
- * and direct page allocation for large objects. All allocated memory is zeroed.
+ * @details For small allocations (≤ 2048 bytes), uses the slab allocator.
+ * 			For large allocations (> 2048 bytes), allocates directly from PMM.
+ * 			Zeroes out allocated objects for security.
  *
- * For objects <= 2048 bytes: Uses slab allocator with appropriate cache size
- * For objects > 2048 bytes: Allocates directly from physical memory manager
+ * @param __Size__ Requested allocation size in bytes.
  *
- * Parameters:
- * - __Size__: Size of memory to allocate in bytes
- *
- * Returns:
- * - Pointer to allocated memory, or NULL on failure
- *
- * Thread safety: Not thread-safe, assumes single-threaded kernel context
+ * @return Pointer to allocated memory, or NULL if allocation fails.
  */
 void*
 KMalloc(size_t __Size__)
@@ -135,21 +116,15 @@ KMalloc(size_t __Size__)
     return (void*)Object;
 }
 
-/*
- * KFree - Kernel Memory Deallocation
+/**
+ * @brief Free memory allocated from the kernel heap.
  *
- * Frees memory allocated by KMalloc. Determines whether the pointer belongs
- * to a slab allocation or a large page allocation and handles accordingly.
+ * @details If the pointer belongs to a slab, returns it to the slab’s free list.
+ * 			If it was a large allocation, frees the corresponding physical page.
  *
- * For slab objects: Returns the object to its slab's free list
- * For large allocations: Returns the pages to the physical memory manager
+ * @param __Ptr__ Pointer to memory to free.
  *
- * Parameters:
- * - __Ptr__: Pointer to memory to free (must be from KMalloc)
- *
- * Returns: None
- *
- * Thread safety: Not thread-safe, assumes single-threaded kernel context
+ * @return void
  */
 void
 KFree(void* __Ptr__)

@@ -1,1 +1,1 @@
-A simple AMD64 modern operating system
+A simple AMD64 Semi-POSIX and Modern Operating System.

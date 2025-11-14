@@ -2,6 +2,7 @@
 
 #include <AllTypes.h>
 #include <BootConsole.h>
+#include <KExports.h>
 /*For Spinlocks*/
 #include <Sync.h>
 
@@ -96,3 +97,12 @@ void PWarn(const char *__Format__, ...);
 void PInfo(const char *__Format__, ...);
 void _PDebug(const char *__Format__, ...);
 void PSuccess(const char *__Format__, ...);
+
+/*Exports*/
+KEXPORT(KrnPrintf)
+KEXPORT(KrnPrintfColor)
+KEXPORT(PError)
+KEXPORT(PWarn)
+KEXPORT(PInfo)
+KEXPORT(PSuccess)
+KEXPORT(_PDebug)

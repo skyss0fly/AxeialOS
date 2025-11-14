@@ -1,19 +1,16 @@
 #include <PMM.h>
 
-/*
- * ParseMemoryMap - Extract memory regions from bootloader
+/**
+ * @brief Parse the system memory map provided by Limine.
  *
- * This function parses the memory map provided by Limine, which describes
- * the layout of physical memory. Each entry contains a base address, length,
- * and type indicating how the region can be used.
+ * @details Iterates through all memory map entries returned by the bootloader,
+ *			classifies them into usable, kernel, or reserved regions, and stores
+ *			them in the PMM region list. Tracks the highest physical address to
+ *			calculate the total number of pages in the system.
  *
- * Memory types handled:
- * - LIMINE_MEMMAP_USABLE: Available for general allocation
- * - LIMINE_MEMMAP_KERNEL_AND_MODULES: Contains kernel and bootloader modules
- * - Others: Reserved for hardware, ACPI, etc. (marked as used)
+ * @return void
  *
- * The function also calculates the total number of pages in the system
- * based on the highest memory address encountered.
+ * @note Must be called during PMM initialization before allocation.
  */
 void
 ParseMemoryMap(void)
@@ -74,17 +71,15 @@ ParseMemoryMap(void)
     PInfo("Total pages: %lu (%lu MB)\n", Pmm.TotalPages, (Pmm.TotalPages * PageSize) / (1024 * 1024));
 }
 
-/*
- * MarkMemoryRegions - Update bitmap based on memory regions
+/**
+ * @brief Mark memory regions in the PMM bitmap.
  *
- * This function updates the PMM bitmap to reflect the allocation status
- * of different memory regions:
- * 1. Initially marks all pages as used (conservative approach)
- * 2. Marks usable regions as free for allocation
- * 3. Protects bitmap pages from allocation to prevent corruption
+ * @details Initially marks all pages as used (safe default).
+ * 			Clears bitmap bits for usable regions to make them available.
+ * 			Protects the PMM bitmap itself from allocation.
+ * 			Updates statistics on available pages.
  *
- * This ensures that only safe, usable memory is available for allocation
- * while protecting critical system structures.
+ * @return void
  */
 void
 MarkMemoryRegions(void)

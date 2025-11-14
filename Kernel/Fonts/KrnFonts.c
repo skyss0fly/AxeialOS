@@ -1,29 +1,23 @@
 #include <KrnFont.h>
 
-/*
- * DisplayChar - Render a Single Character to Framebuffer
+/**
+ * @brief Render a single character to the framebuffer.
  *
- * Renders a single character from the kernel font map onto the specified
- * framebuffer at the given position. Each character is 8x16 pixels and
- * uses a bitmap representation where each bit corresponds to a pixel.
+ * @details Retrieves the 8x16 bitmap for the given character from the kernel font map
+ * 			and draws it pixel-by-pixel into the framebuffer at the specified position.
+ * 			Each bit in the font bitmap corresponds to one pixel; set bits are drawn
+ * 			using the provided 32-bit color value.
  *
- * Parameters:
- * - __FrameBuffer__: Pointer to the linear framebuffer memory
- * - __FrameBufferW__: Width of the framebuffer in pixels
- * - __PosX__: X coordinate (column) to start rendering
- * - __PosY__: Y coordinate (row) to start rendering
- * - __Char__: ASCII character code to render (0-255)
- * - __32bitColor__: 32-bit ARGB color value for foreground pixels
+ * @param __FrameBuffer__ Pointer to the framebuffer memory (32-bit pixels).
+ * @param __FrameBufferW__ Width of the framebuffer in pixels.
+ * @param __PosX__ X-coordinate (column) of the character’s top-left corner.
+ * @param __PosY__ Y-coordinate (row) of the character’s top-left corner.
+ * @param __Char__ Character to render.
+ * @param __32bitColor__ ARGB color value used for drawing pixels.
  *
- * Algorithm:
- * - Look up character bitmap in KrnlFontMap array
- * - For each of 16 rows in the character:
- *   - Extract the row's 8-bit pattern
- *   - For each of 8 columns (bits 7-0):
- *     - If bit is set, write color to framebuffer at calculated position
+ * @return void
  *
- * Thread safety: Not thread-safe. Caller must ensure exclusive framebuffer access.
- * Performance: O(1) - fixed 128 pixel operations per character.
+ * @note Assumes an 8x16 fixed-width font defined in KrnlFontMap.
  */
 void
 DisplayChar(
@@ -55,30 +49,24 @@ uint32_t __32bitColor__)
     }
 }
 
-/*
- * DisplayString - Render a String to Framebuffer
+/**
+ * @brief Render a null-terminated string to the framebuffer.
  *
- * Renders a null-terminated string of characters to the framebuffer by
- * repeatedly calling DisplayChar for each character in sequence.
- * Characters are rendered horizontally with no spacing between them.
+ * @details Iterates through each character in the string and calls DisplayChar
+ * 			to render it. Advances the X position by the font width after each
+ * 			character to ensure proper spacing.
  *
- * Parameters:
- * - __FrameBuffer__: Pointer to the linear framebuffer memory
- * - __FrameBufferW__: Width of the framebuffer in pixels
- * - __PosX__: Starting X coordinate for the first character
- * - __PosY__: Y coordinate for all characters in the string
- * - __String__: Pointer to null-terminated string to render
- * - __32bitColor__: 32-bit ARGB color value for all characters
+ * @param __FrameBuffer__ Pointer to the framebuffer memory (32-bit pixels).
+ * @param __FrameBufferW__ Width of the framebuffer in pixels.
+ * @param __PosX__ Starting X-coordinate for the string.
+ * @param __PosY__ Starting Y-coordinate for the string.
+ * @param __String__ Pointer to the null-terminated string to render.
+ * @param __32bitColor__ ARGB color value used for drawing pixels.
  *
- * Algorithm:
- * - Initialize current X position to starting position
- * - For each character in string until null terminator:
- *   - Render character at current position
- *   - Advance X position by character width (8 pixels)
+ * @return void
  *
- * Thread safety: Not thread-safe. Caller must ensure exclusive framebuffer access.
- * Performance: O(n) where n is string length.
- * Limitations: No bounds checking - will overflow framebuffer if string is too long.
+ * @note Useful for rendering kernel messages, debugging output,
+ *       or simple text overlays directly to the framebuffer.
  */
 void
 DisplayString(

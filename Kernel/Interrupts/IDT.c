@@ -1,38 +1,13 @@
 #include <IDT.h>
 
-/*
- * Global IDT Entries Array
- *
- * This array holds all 256 IDT entries. Each entry describes an interrupt gate
- * that points to the appropriate handler function. The array is initialized
- * during IDT setup and loaded into the CPU's IDTR register.
- *
- * Index 0-31: CPU exceptions (Division Error, Page Fault, etc.)
- * Index 32-255: Hardware interrupts (IRQs) and software interrupts
- */
+/** @brief Globals */
 IdtEntry
 IdtEntries[256];
 
-/*
- * IDT Pointer Structure
- *
- * This structure contains the base address and limit of the IDT.
- * It is used with the LIDT instruction to load the IDT into the CPU.
- * The limit is set to the size of the IDT entries array minus 1.
- */
 IdtPointer
 IdtPtr;
 
-/*
- * Exception Names Array
- *
- * An array of strings containing human-readable names for CPU exceptions.
- * These are used for debugging and error reporting when exceptions occur.
- * The array corresponds to exception vectors 0-31 as defined by the x86-64 architecture.
- *
- * Note: Some entries are marked as "Reserved" for future use or are not implemented
- * in current processor generations.
- */
+/** @brief Exception Labels */
 const char
 *ExceptionNames[32]=
 {
@@ -43,26 +18,19 @@ const char
     "x87 FPU Error", "Alignment Check", "Machine Check", "SIMD Floating-Point Exception"
 };
 
-/*
- * SetIdtEntry - Configure an IDT Entry
+/**
+ * @brief Configure an entry in the Interrupt Descriptor Table (IDT).
  *
- * This function sets up a single entry in the Interrupt Descriptor Table.
- * Each IDT entry is an interrupt gate descriptor that contains information
- * about how to handle a specific interrupt or exception.
+ * @details Sets up an IDT entry with the given handler address, code segment selector,
+ *			and type/attributes. Splits the 64-bit handler address into low, mid, and high
+ *			parts across the IDT entry fields.
  *
- * Parameters:
- *   __Index__   - The index in the IDT (0-255) where this entry will be placed
- *   __Handler__ - The 64-bit address of the interrupt handler function
- *   __Selector__ - The code segment selector for the handler (usually kernel code segment)
- *   __Flags__   - Type and attributes flags (e.g., interrupt gate, privilege level)
+ * @param __Index__   Index of the IDT entry (0–255).
+ * @param __Handler__ Address of the interrupt handler function.
+ * @param __Selector__ Code segment selector for the handler.
+ * @param __Flags__   Type and attribute flags (e.g., interrupt gate).
  *
- * The handler address is split into three parts to fit the x86-64 IDT entry format:
- * - OffsetLow:  Bits 0-15 of the address
- * - OffsetMid:  Bits 16-31 of the address
- * - OffsetHigh: Bits 32-63 of the address
- *
- * IST (Interrupt Stack Table) is set to 0, using the current stack.
- * Reserved field is set to 0 as required by the architecture.
+ * @return void
  */
 void
 SetIdtEntry(int __Index__, uint64_t __Handler__, uint16_t __Selector__, uint8_t __Flags__)
@@ -76,26 +44,19 @@ SetIdtEntry(int __Index__, uint64_t __Handler__, uint16_t __Selector__, uint8_t 
     IdtEntries[__Index__].Reserved = 0;
 }
 
-/*
- * InitializePic - Initialize the Programmable Interrupt Controller
+/**
+ * @brief Initialize the legacy Programmable Interrupt Controller (PIC).
  *
- * This function initializes the legacy 8259 PIC (Programmable Interrupt Controller).
- * The PIC is responsible for handling hardware interrupts from devices like keyboards,
- * timers, and serial ports. In modern systems, the PIC is often replaced by the APIC,
- * but initialization is still required for compatibility.
+ * @details Programs the PIC with initialization control words (ICWs):
+ * 			ICW1: Start initialization sequence.
+ * 			ICW2: Remap IRQs to vectors 32–47.
+ * 			ICW3: Configure master/slave cascade.
+ * 			ICW4: Set 8086/88 mode.
+ * 			Finally, masks all IRQs since APIC is used instead of PIC.
  *
- * The initialization follows the standard PIC programming sequence:
- * 1. ICW1: Send initialization command to both master and slave PICs
- * 2. ICW2: Remap IRQ vectors to avoid conflicts with CPU exceptions (0-31)
- * 3. ICW3: Configure master-slave relationship (cascade mode)
- * 4. ICW4: Set x86 mode and other operational parameters
+ * @return void
  *
- * After initialization, all IRQs are masked because the system uses APIC instead.
- * The PIC is kept initialized but disabled to prevent spurious interrupts.
- *
- * Note: This is legacy PIC initialization. Modern systems use APIC (Advanced
- * Programmable Interrupt Controller) for interrupt handling, but PIC setup
- * is still required for backward compatibility.
+ * @note Provides compatibility for legacy hardware.
  */
 void
 InitializePic(void)
@@ -123,30 +84,19 @@ InitializePic(void)
     PDebug("PIC initialized (all IRQs masked)\n");
 }
 
-/*
- * InitializeIdt - Initialize the Interrupt Descriptor Table
+/**
+ * @brief Initialize the Interrupt Descriptor Table (IDT).
  *
- * This function sets up the entire IDT for the system. It performs the following steps:
- * 1. Initializes the IDT pointer structure with the correct base address and limit
- * 2. Clears all IDT entries to ensure no garbage data
- * 3. Sets up ISR (Interrupt Service Routine) entries for CPU exceptions (vectors 0-19)
- * 4. Sets up IRQ entries for hardware interrupts (vectors 32-47)
- * 5. Initializes the PIC (Programmable Interrupt Controller)
- * 6. Loads the IDT into the CPU using the LIDT instruction
- * 7. Enables interrupts with the STI instruction
+ * @details Clears all IDT entries.
+ *			Sets up ISR stubs for CPU exceptions (vectors 0–19).
+ *			Maps IRQ handlers for hardware interrupts (vectors 32–47).
+ *			Initializes the PIC for compatibility.
+ *			Loads the IDT into the CPU with `lidt`.
+ *			Enables interrupts globally with `sti`.
  *
- * The IDT is crucial for handling both software-generated exceptions (like divide-by-zero)
- * and hardware-generated interrupts (like keyboard input). Each entry points to a
- * specific handler function that will be called when the corresponding interrupt occurs.
+ * @return void
  *
- * Parameters: None
- * Returns: None
- *
- * Side effects:
- * - Modifies global IdtPtr structure
- * - Modifies IdtEntries array
- * - Enables CPU interrupts
- * - Initializes PIC
+ * @note Must be called during kernel initialization before handling interrupts.
  */
 void
 InitializeIdt(void)
@@ -217,26 +167,15 @@ InitializeIdt(void)
     PSuccess("IDT init... OK\n");
 }
 
-/*
- * Exception Debugging and Diagnostic Functions
+/**
+ * @brief Dump memory contents in hex format.
  *
- * These functions provide detailed diagnostic information when CPU exceptions occur.
- * They are used by the ISR handler to dump relevant system state for debugging purposes.
- * The information includes memory contents, instruction bytes, and CPU control registers.
- */
-
-/*
- * DumpMemory - Display memory contents at a specific address
+ * @details Prints a hex dump of the specified memory region, 16 bytes per line.
  *
- * This function dumps a specified number of bytes from memory starting at the given address.
- * It's useful for examining memory contents around fault addresses during debugging.
+ * @param __Address__ Starting address to dump.
+ * @param __Bytes__   Number of bytes to display.
  *
- * Parameters:
- *   __Address__ - The starting memory address to dump
- *   __Bytes__   - The number of bytes to display
- *
- * The output shows 16 bytes per line in hexadecimal format, with the address
- * of each line displayed at the beginning.
+ * @return void
  */
 void
 DumpMemory(uint64_t __Address__, int __Bytes__)
@@ -254,17 +193,14 @@ DumpMemory(uint64_t __Address__, int __Bytes__)
     }
 }
 
-/*
- * DumpInstruction - Display instruction bytes at a specific RIP
+/**
+ * @brief Dump instruction bytes at a given RIP.
  *
- * This function shows the raw instruction bytes at the instruction pointer (RIP)
- * where an exception occurred. This helps in understanding what instruction
- * caused the fault.
+ * @details Prints the first 16 bytes of machine code at the given instruction pointer.
  *
- * Parameters:
- *   __Rip__ - The instruction pointer address to dump bytes from
+ * @param __Rip__ Instruction pointer address.
  *
- * Displays the next 16 bytes starting from the RIP address in hexadecimal format.
+ * @return void
  */
 void
 DumpInstruction(uint64_t __Rip__)
@@ -279,20 +215,12 @@ DumpInstruction(uint64_t __Rip__)
     KrnPrintf("\n");
 }
 
-/*
- * DumpControlRegisters - Display CPU control register values
+/**
+ * @brief Dump CPU control registers.
  *
- * This function reads and displays the values of the x86-64 control registers.
- * Control registers contain important CPU state information that can help
- * diagnose the cause of exceptions.
+ * @details Reads CR0, CR2, CR3, and CR4 using inline assembly and prints their values.
  *
- * CR0: Contains system control flags (paging, protection, etc.)
- * CR2: Contains the page fault address (valid during page faults)
- * CR3: Contains the page directory base address (for virtual memory)
- * CR4: Contains additional control flags (PAE, PSE, etc.)
- *
- * Parameters: None
- * Returns: None
+ * @return void
  */
 void
 DumpControlRegisters(void)
@@ -310,29 +238,13 @@ DumpControlRegisters(void)
     KrnPrintf("  CR3: 0x%016lx  CR4: 0x%016lx\n", CR3, CR4);
 }
 
-/*
- * Interrupt and Exception Handler Stubs
+/**
+ * @brief ISR stub for CPU exceptions.
  *
- * These macros and functions generate the low-level assembly stubs that handle
- * the transition from interrupt/exception context to C code. Each stub:
- * 1. Pushes a dummy error code (0) for exceptions that don't provide one
- * 2. Pushes the interrupt vector number
- * 3. Jumps to the common stub which saves registers and calls the C handler
+ * @details Pushes dummy error code and vector number onto the stack,
+ *			then jumps to the common ISR handler stub.
  *
- * ISR stubs handle CPU exceptions (vectors 0-19)
- * IRQ stubs handle hardware interrupts (vectors 32-47)
- *
- * The distinction between ISR_STUB and ISR_STUB_ERR is that some exceptions
- * (like double fault, page fault) already push an error code, so ISR_STUB_ERR
- * doesn't push a dummy one.
- */
-
-/*
- * ISR_STUB - Macro for generating Interrupt Service Routine stubs
- *
- * Creates a stub function for CPU exceptions that don't push an error code.
- * The stub pushes a dummy error code (0) and the vector number, then jumps
- * to the common ISR handler.
+ * @param num Exception vector number.
  */
 #define ISR_STUB(num) \
     void Isr##num(void) { \
@@ -343,11 +255,13 @@ DumpControlRegisters(void)
         ); \
     }
 
-/*
- * ISR_STUB_ERR - Macro for generating ISR stubs for exceptions with error codes
+/**
+ * @brief ISR stub for exceptions with error codes.
  *
- * Creates a stub function for CPU exceptions that already push an error code
- * on the stack. Only pushes the vector number, then jumps to common handler.
+ * @details	Pushes the vector number (with error code already on stack),
+ * 			then jumps to the common ISR handler stub.
+ *
+ * @param num Exception vector number.
  */
 #define ISR_STUB_ERR(num) \
     void Isr##num(void) { \
@@ -357,11 +271,14 @@ DumpControlRegisters(void)
         ); \
     }
 
-/*
- * IRQ_STUB - Macro for generating Interrupt Request handler stubs
+/**
+ * @brief IRQ stub for hardware interrupts.
  *
- * Creates a stub function for hardware interrupts. Similar to ISR_STUB but
- * uses the IrqCommonStub instead of IsrCommonStub.
+ * @details Pushes dummy error code and interrupt vector number,
+ * 			then jumps to the common IRQ handler stub.
+ *
+ * @param num      IRQ number (0–15).
+ * @param int_num  Interrupt vector number (32–47).
  */
 #define IRQ_STUB(num, int_num) \
     void Irq##num(void) { \
@@ -385,33 +302,6 @@ IRQ_STUB(4, 36)   IRQ_STUB(5, 37)   IRQ_STUB(6, 38)   IRQ_STUB(7, 39)
 IRQ_STUB(8, 40)   IRQ_STUB(9, 41)   IRQ_STUB(10, 42)  IRQ_STUB(11, 43)
 IRQ_STUB(12, 44)  IRQ_STUB(13, 45)  IRQ_STUB(14, 46)  IRQ_STUB(15, 47)
 
-/*
- * Common Interrupt/Exception Handler Stubs
- *
- * These assembly functions provide the low-level context switching between
- * interrupt/exception mode and normal execution. They are responsible for:
- * 1. Saving all CPU registers on the stack
- * 2. Calling the appropriate C handler function
- * 3. Restoring all CPU registers
- * 4. Cleaning up the stack and returning from interrupt
- *
- * The stack layout when these stubs are called:
- *   [esp]     -> Error code (or dummy 0)
- *   [esp+8]   -> Interrupt vector number
- *   [esp+16]  -> RIP (return address)
- *   [esp+24]  -> CS (code segment)
- *   [esp+32]  -> RFLAGS
- *   [esp+40]  -> RSP (user stack, if applicable)
- *   [esp+48]  -> SS (stack segment, if applicable)
- */
-
-/*
- * IsrCommonStub - Common stub for CPU exception handlers
- *
- * This assembly function handles the transition for CPU exceptions (ISRs).
- * It saves the complete CPU state, calls the C IsrHandler function,
- * then restores state and returns from the interrupt.
- */
 __asm__(
     "IsrCommonStub:\n\t"
     "pushq %rax\n\t"      /*Save general-purpose registers*/
@@ -450,14 +340,7 @@ __asm__(
     "iretq\n\t"           /*Return from interrupt*/
 );
 
-/*
- * IrqCommonStub - Common stub for hardware interrupt handlers
- *
- * This assembly function handles the transition for hardware interrupts (IRQs).
- * Similar to IsrCommonStub but calls the IrqHandler function instead.
- * Hardware interrupts typically don't have error codes, so the stack layout
- * is slightly different from exception handlers.
- */
+
 __asm__(
     "IrqCommonStub:\n\t"
     "pushq %rax\n\t"      /*Save general-purpose registers*/

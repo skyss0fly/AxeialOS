@@ -1,20 +1,22 @@
 #include <KrnPrintf.h>
 
-/*
- * PError - Log Error Messages
+/**
+ * @brief Print an error message to the console.
  *
- * Outputs error messages with red "[ERROR]:" prefix. Used for critical
- * system errors that require immediate attention.
+ * @details Acquires the console spinlock for thread-safe output.
+ *			Temporarily sets foreground/background colors to error style.
+ *			Prints the "[ERROR]:" prefix followed by the formatted message.
+ *			Restores previous colors and releases the spinlock.
  *
- * Parameters:
- * - __Format__: Format string with embedded specifiers
- * - ...: Variable arguments corresponding to format specifiers
+ * @param __Format__ Format string with optional specifiers.
+ * @param ...        Variable arguments matching the format string.
  *
- * Thread safety: Protected by ConsoleLock spinlock.
+ * @return void
  */
 void
 PError(const char *__Format__, ...)
 {
+	if (!__Format__) __Format__ = "(null)";
     AcquireSpinLock(&ConsoleLock);
     uint32_t OldFG = Console.TXColor;
     uint32_t OldBG = Console.BGColor;
@@ -45,21 +47,22 @@ PError(const char *__Format__, ...)
     ReleaseSpinLock(&ConsoleLock);
 }
 
-/*
- * PWarn - Log Warning Messages
+/**
+ * @brief Print a warning message to the console.
  *
- * Outputs warning messages with yellow/orange "[WARN]:" prefix. Used for
- * non-critical issues that should be noted but don't prevent operation.
+ * @details Uses warning color scheme.
+ * 			Prints the "[WARN]:" prefix followed by the formatted message.
+ * 			Thread-safe via console spinlock.
  *
- * Parameters:
- * - __Format__: Format string with embedded specifiers
- * - ...: Variable arguments corresponding to format specifiers
+ * @param __Format__ Format string with optional specifiers.
+ * @param ...        Variable arguments matching the format string.
  *
- * Thread safety: Protected by ConsoleLock spinlock.
+ * @return void
  */
 void
 PWarn(const char *__Format__, ...)
 {
+	if (!__Format__) __Format__ = "(null)";
     AcquireSpinLock(&ConsoleLock);
     uint32_t OldFG = Console.TXColor;
     uint32_t OldBG = Console.BGColor;
@@ -90,21 +93,22 @@ PWarn(const char *__Format__, ...)
     ReleaseSpinLock(&ConsoleLock);
 }
 
-/*
- * PInfo - Log Informational Messages
+/**
+ * @brief Print an informational message to the console.
  *
- * Outputs informational messages with cyan "[INFO]:" prefix. Used for
- * general status updates and progress information during normal operation.
+ * @details Uses informational color scheme.
+ *			Prints the "[INFO]:" prefix followed by the formatted message.
+ *			Thread-safe via console spinlock.
  *
- * Parameters:
- * - __Format__: Format string with embedded specifiers
- * - ...: Variable arguments corresponding to format specifiers
+ * @param __Format__ Format string with optional specifiers.
+ * @param ...        Variable arguments matching the format string.
  *
- * Thread safety: Protected by ConsoleLock spinlock.
+ * @return void
  */
 void
 PInfo(const char *__Format__, ...)
 {
+	if (!__Format__) __Format__ = "(null)";
     AcquireSpinLock(&ConsoleLock);
     uint32_t OldFG = Console.TXColor;
     uint32_t OldBG = Console.BGColor;
@@ -135,22 +139,24 @@ PInfo(const char *__Format__, ...)
     ReleaseSpinLock(&ConsoleLock);
 }
 
-/*
- * _PDebug - Log Debug Messages (Internal Function)
+/**
+ * @brief Print a debug message to the console.
  *
- * Outputs debug messages with magenta "[DEBUG]:" prefix. Used for detailed
- * debugging information during development. The underscore prefix indicates
- * this is an internal function, typically called through a macro.
+ * @details Uses debug color scheme.
+ * 			Prints the "[DEBUG]:" prefix followed by the formatted message.
+ * 			Intended for development and diagnostic output.
  *
- * Parameters:
- * - __Format__: Format string with embedded specifiers
- * - ...: Variable arguments corresponding to format specifiers
+ * @param __Format__ Format string with optional specifiers.
+ * @param ...        Variable arguments matching the format string.
  *
- * Thread safety: Protected by ConsoleLock spinlock.
+ * @return void
+ *
+ * @note This function is named `_PDebug` to avoid conflicts with macros.
  */
 void
 _PDebug(const char *__Format__, ...)
 {
+	if (!__Format__) __Format__ = "(null)";
     AcquireSpinLock(&ConsoleLock);
     uint32_t OldFG = Console.TXColor;
     uint32_t OldBG = Console.BGColor;
@@ -180,21 +186,22 @@ _PDebug(const char *__Format__, ...)
     ReleaseSpinLock(&ConsoleLock);
 }
 
-/*
- * PSuccess - Log Success Messages
+/**
+ * @brief Print a success message to the console.
  *
- * Outputs success messages with green "[OK]:" prefix. Used to indicate
- * successful completion of operations or positive status updates.
+ * @details Uses success color scheme.
+ * 			Prints the "[OK]:" prefix followed by the formatted message.
+ * 			Thread-safe via console spinlock.
  *
- * Parameters:
- * - __Format__: Format string with embedded specifiers
- * - ...: Variable arguments corresponding to format specifiers
+ * @param __Format__ Format string with optional specifiers.
+ * @param ...        Variable arguments matching the format string.
  *
- * Thread safety: Protected by ConsoleLock spinlock.
+ * @return void
  */
 void
 PSuccess(const char *__Format__, ...)
 {
+	if (!__Format__) __Format__ = "(null)";
     AcquireSpinLock(&ConsoleLock);
     uint32_t OldFG = Console.TXColor;
     uint32_t OldBG = Console.BGColor;

@@ -1,12 +1,12 @@
 #include <PMM.h>
 
-/*
- * PmmDumpStats - Display PMM memory statistics
+/**
+ * @brief Dump physical memory manager statistics.
  *
- * Prints comprehensive statistics about the current state of physical memory
- * management, including total, used, and free pages, memory usage percentage,
- * and bitmap size information. This is useful for monitoring memory usage
- * and detecting potential memory leaks or allocation issues.
+ * @details Prints total, used, and free pages, memory usage percentage,
+ * 			and bitmap size. Useful for debugging and monitoring memory usage.
+ *
+ * @return void
  */
 void
 PmmDumpStats(void)
@@ -28,18 +28,13 @@ PmmDumpStats(void)
     Pmm.BitmapSize, (Pmm.BitmapSize * sizeof(uint64_t)) / 1024);
 }
 
-/*
- * PmmDumpRegions - Display memory region information
+/**
+ * @brief Dump memory region information.
  *
- * Lists all memory regions identified during PMM initialization, showing
- * their base addresses, lengths, types, and sizes. This helps verify that
- * the memory map was parsed correctly and that regions are properly classified.
+ * @details Iterates through all memory regions tracked by the PMM and prints
+ * 			their base, length, type, and size in MB.
  *
- * Region types:
- * - Usable: Available for general allocation
- * - Reserved: Reserved for hardware/firmware use
- * - Kernel: Contains kernel and bootloader modules
- * - Bad: Faulty memory (if detected)
+ * @return void
  */
 void
 PmmDumpRegions(void)

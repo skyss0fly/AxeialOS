@@ -4,29 +4,29 @@
 #include <PerCPUData.h>
 #include <SymAP.h>
 
-/*
- * IsrHandler - Main CPU Exception Dispatcher
+/**
+ * @brief Handle CPU exceptions (ISRs).
  *
- * This function is called by the common ISR stub (IsrCommonStub) whenever a CPU
- * exception occurs. It performs comprehensive analysis and dumps diagnostic
- * information to help debug the cause of the exception.
+ * @details Provides diagnostic output and halts the system on fatal exceptions.
+ * 			Steps performed:
+ * 			Disables interrupts to prevent re-entrancy.
+ * 			Prints exception name, vector number, error code, and CPU ID.
+ * 			Dumps CPU register state, segment registers, and RFLAGS.
+ * 			Displays control registers (CR0–CR4).
+ * 			Shows instruction bytes at the faulting RIP.
+ * 			Dumps stack contents and generates a stack trace.
+ * 			Provides detailed analysis for General Protection Faults and Page Faults.
+ * 			Prints descriptor table information for SMP debugging.
+ * 			Halts the CPU indefinitely after diagnostics.
  *
- * Parameters:
- *   __Frame__ - Pointer to the interrupt frame containing complete CPU state
- *               at the time of the exception, including registers, segments,
- *               and error codes.
+ * @param __Frame__ Pointer to the interrupt frame containing CPU state.
  *
- * The handler disables interrupts immediately to prevent re-entrant exceptions,
- * then collects and displays extensive diagnostic information before halting
- * the system. This is appropriate for kernel development but would be replaced
- * with recovery mechanisms in a production system.
+ * @return void
  *
- * Exception vectors handled (0-19):
- * 0: Division Error, 1: Debug, 2: NMI, 3: Breakpoint, 4: Overflow,
- * 5: Bound Range, 6: Invalid Opcode, 7: Device NA, 8: Double Fault,
- * 9: Coprocessor Overrun, 10: Invalid TSS, 11: Segment NP, 12: Stack Fault,
- * 13: General Protection, 14: Page Fault, 15: Reserved, 16: FPU Error,
- * 17: Alignment Check, 18: Machine Check, 19: SIMD Exception
+ * @note This handler is intended for development/debugging. In production,
+ *       exception handling should recover or terminate gracefully.
+ * 
+ * @todo Probably handle ring 3 faults for recovery and Reboot for crtical ones.
  */
 void
 IsrHandler(InterruptFrame *__Frame__)

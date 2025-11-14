@@ -1,23 +1,19 @@
 #include <IDT.h>
 #include <Timer.h>
 
-/*
- * IrqHandler - Main Hardware Interrupt Dispatcher
+/**
+ * @brief Handle hardware interrupts (IRQs).
  *
- * This function is called by the common IRQ stub (IrqCommonStub) whenever a hardware
- * interrupt occurs. It examines the interrupt vector number and dispatches to the
- * appropriate device handler.
+ * @details Dispatches interrupts based on their vector number:
+ * 			Vector 32 (IRQ0): APIC timer interrupt, forwarded to the timer subsystem.
+ * 			Vectors 40–47: Legacy PIC slave interrupts, send End Of Interrupt (EOI) to slave PIC.
+ * 			All other IRQs: Send EOI to master PIC.
  *
- * Parameters:
- *   __Frame__ - Pointer to the interrupt frame containing CPU state and interrupt info
- *               The IntNo field contains the interrupt vector number (32-47 for IRQs)
+ * @param __Frame__ Pointer to the interrupt frame containing CPU state.
  *
- * The function handles two main categories of interrupts:
- * 1. APIC Timer (vector 32) - High-precision timer interrupts
- * 2. Legacy PIC interrupts (vectors 33-47) - Older hardware devices
+ * @return void
  *
- * For PIC interrupts, proper End-of-Interrupt (EOI) signaling is crucial to allow
- * further interrupts from the same device.
+ * @note APIC timer interrupts do not require PIC EOI signaling.
  */
 void
 IrqHandler(InterruptFrame *__Frame__)

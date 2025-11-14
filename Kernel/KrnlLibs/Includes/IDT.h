@@ -132,3 +132,8 @@ extern void Irq0(void);  extern void Irq1(void);  extern void Irq2(void);  exter
 extern void Irq4(void);  extern void Irq5(void);  extern void Irq6(void);  extern void Irq7(void);
 extern void Irq8(void);  extern void Irq9(void);  extern void Irq10(void); extern void Irq11(void);
 extern void Irq12(void); extern void Irq13(void); extern void Irq14(void); extern void Irq15(void);
+
+/**
+ * Public
+ */
+KEXPORT(SetIdtEntry);

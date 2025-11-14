@@ -1,27 +1,15 @@
 #include <PMM.h>
 
-/*
- * Global PMM State
- *
- * Pmm - The main Physical Memory Manager structure containing all state
- *       information including memory regions, bitmap, and statistics
- */
+/** @brief Global PMM state */
 PhysicalMemoryManager Pmm = {0};
 
-/*
- * FindFreePage - Locate an available physical page
+/**
+ * @brief Find the next free physical page.
  *
- * This function searches for a free page using a linear search with allocation
- * hint optimization. It starts from the last allocation hint to improve cache
- * locality and reduce search time for consecutive allocations.
+ * @details Searches the allocation bitmap for a free page, starting from the
+ * 			last allocation hint. Wraps around if necessary.
  *
- * Returns:
- *   Page index if found, PmmBitmapNotFound if no free pages available
- *
- * Algorithm:
- * 1. Search from LastAllocHint forward to end of memory
- * 2. If not found, search from beginning to LastAllocHint
- * 3. Update LastAllocHint to next page after found page
+ * @return Index of the free page, or PmmBitmapNotFound if none available.
  */
 uint64_t
 FindFreePage(void)
@@ -51,18 +39,18 @@ FindFreePage(void)
     return PmmBitmapNotFound;
 }
 
-/*
- * InitializePmm - Set up the Physical Memory Manager
+/**
+ * @brief Initialize the Physical Memory Manager.
  *
- * This function initializes the PMM by:
- * 1. Retrieving the Higher Half Direct Mapping offset from Limine
- * 2. Parsing the system memory map to identify usable/reserved regions
- * 3. Setting up the allocation bitmap in physical memory
- * 4. Marking memory regions as used/free according to their type
- * 5. Calculating and displaying memory statistics
+ * @details Retrieves HHDM offset from Limine.
+ * 			Parses the system memory map.
+ * 			Initializes the allocation bitmap.
+ * 			Marks memory regions as used/free.
+ * 			Calculates memory statistics.
  *
- * The initialization must occur early in the boot process, before any
- * dynamic memory allocation can take place.
+ * @return void
+ *
+ * @note Must be called during kernel initialization before any allocations.
  */
 void
 InitializePmm(void)
@@ -115,15 +103,13 @@ InitializePmm(void)
     (Pmm.Stats.FreePages * PageSize) / (1024 * 1024));
 }
 
-/*
- * AllocPage - Allocate a single physical page
+/**
+ * @brief Allocate a single physical page.
  *
- * Allocates one 4KB physical page and returns its physical address.
- * This is the most common allocation function used by higher-level
- * memory managers.
+ * @details Finds a free page, marks it as used in the bitmap, updates statistics,
+ * 			and returns its physical address.
  *
- * Returns:
- *   Physical address of allocated page, or 0 on failure
+ * @return Physical address of the allocated page, or 0 if none available.
  */
 uint64_t
 AllocPage(void)
@@ -147,15 +133,15 @@ AllocPage(void)
     return PhysAddr;
 }
 
-/*
- * FreePage - Release a single physical page
+/**
+ * @brief Free a single physical page.
  *
- * Frees a previously allocated physical page, making it available for
- * future allocations. Performs validation to prevent double-free and
- * invalid address errors.
+ * @details Validates the physical address, checks for double free,
+ * 			clears the bitmap entry, and updates statistics.
  *
- * Parameters:
- *   __PhysAddr__ - Physical address of the page to free (must be page-aligned)
+ * @param __PhysAddr__ Physical address of the page to free.
+ *
+ * @return void
  */
 void
 FreePage(uint64_t __PhysAddr__)
@@ -182,18 +168,15 @@ FreePage(uint64_t __PhysAddr__)
     PDebug("Freed page: 0x%016lx (index %lu)\n", __PhysAddr__, PageIndex);
 }
 
-/*
- * AllocPages - Allocate multiple contiguous physical pages
+/**
+ * @brief Allocate multiple contiguous physical pages.
  *
- * Allocates a contiguous block of physical pages. This is useful for
- * large allocations that require physically contiguous memory, such
- * as DMA buffers or page tables.
+ * @details Searches for a contiguous block of free pages of the requested size.
+ * 			Marks them as used and returns the base physical address.
  *
- * Parameters:
- *   __Count__ - Number of contiguous pages to allocate
+ * @param __Count__ Number of pages to allocate.
  *
- * Returns:
- *   Physical address of first page in block, or 0 on failure
+ * @return Physical base address of the allocated block, or 0 if failed.
  */
 uint64_t
 AllocPages(size_t __Count__)
@@ -250,15 +233,15 @@ AllocPages(size_t __Count__)
     return 0;
 }
 
-/*
- * FreePages - Release multiple contiguous physical pages
+/**
+ * @brief Free multiple contiguous physical pages.
  *
- * Frees a block of previously allocated contiguous pages. The pages
- * are freed individually to ensure proper validation of each page.
+ * @details Frees each page in the block individually, updating statistics.
  *
- * Parameters:
- *   __PhysAddr__ - Physical address of first page in block
- *   __Count__    - Number of pages to free
+ * @param __PhysAddr__ Base physical address of the block.
+ * @param __Count__    Number of pages to free.
+ *
+ * @return void
  */
 void
 FreePages(uint64_t __PhysAddr__, size_t __Count__)
@@ -276,18 +259,15 @@ FreePages(uint64_t __PhysAddr__, size_t __Count__)
         FreePage(__PhysAddr__ + (Index * PageSize));
 }
 
-/*
- * PmmValidatePage - Validate a physical page address
+/**
+ * @brief Validate a physical page address.
  *
- * Performs comprehensive validation of a physical address to ensure
- * it represents a valid, page-aligned address within the system's
- * physical memory range.
+ * @details Checks that the address is non-zero, page-aligned, and within
+ * 			the total page count managed by the PMM.
  *
- * Parameters:
- *   __PhysAddr__ - Physical address to validate
+ * @param __PhysAddr__ Physical address to validate.
  *
- * Returns:
- *   1 if address is valid, 0 otherwise
+ * @return 1 if valid, 0 otherwise.
  */
 int
 PmmValidatePage(uint64_t __PhysAddr__)

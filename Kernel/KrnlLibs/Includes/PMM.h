@@ -94,16 +94,28 @@ void FreePages(uint64_t __PhysAddr__, size_t __Count__);
 /**
  * Utils
  */
-void PmmDumpStats(void);
-void PmmDumpRegions(void);
-int PmmValidatePage(uint64_t __PhysAddr__);
+void PmmDumpStats(void);//
+void PmmDumpRegions(void);//
+int PmmValidatePage(uint64_t __PhysAddr__);//
 
 /**
  * Bitmap Functions
  */
-void InitializeBitmap(void);
-void ParseMemoryMap(void);
-void MarkMemoryRegions(void);
-void SetBitmapBit(uint64_t __PageIndex__);
-void ClearBitmapBit(uint64_t __PageIndex__);
-int TestBitmapBit(uint64_t __PageIndex__);
+void InitializeBitmap(void);//
+void ParseMemoryMap(void);//
+void MarkMemoryRegions(void);//
+void SetBitmapBit(uint64_t __PageIndex__);//
+void ClearBitmapBit(uint64_t __PageIndex__);//
+int TestBitmapBit(uint64_t __PageIndex__);//
+
+/**
+ * Public
+ */
+KEXPORT(InitializePmm);
+KEXPORT(AllocPage);
+KEXPORT(FreePage);
+KEXPORT(AllocPages);
+KEXPORT(FreePages);
+KEXPORT(PhysToVirt);
+KEXPORT(VirtToPhys);
+

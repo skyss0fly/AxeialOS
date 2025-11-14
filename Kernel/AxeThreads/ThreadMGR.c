@@ -7,30 +7,15 @@
 #include <PerCPUData.h>
 #include <AxeSchd.h>
 
-/*
- * Thread Manager Global State
- *
- * These variables maintain the global state of the thread management system.
- * They are shared across all CPUs and protected by appropriate synchronization
- * primitives to ensure thread-safe access in a multi-processor environment.
- *
- * NextThreadId: Monotonically increasing counter for assigning unique thread IDs.
- * ThreadList: Head of doubly-linked list containing all active threads in system.
- * ThreadListLock: Spinlock protecting the global thread list from concurrent access.
- * CurrentThreads: Per-CPU array storing the currently executing thread on each CPU.
- * CurrentThreadLock: Spinlock protecting the CurrentThreads array.
- *
- * Thread safety: All operations on shared state use appropriate locking.
- * The system assumes single-writer semantics for most operations.
- */
+/** @brief Thread Globals and static Spinlock */
 uint32_t NextThreadId = 1;
 Thread* ThreadList = NULL;
 SpinLock ThreadListLock;
 Thread* CurrentThreads[MaxCPUs];
-static SpinLock CurrentThreadLock;
+static SpinLock CurrentThreadLock; /*Mutexes would have been fine ig*/
 
 /**
- * Initialize Thread Manager
+ * @brief Initialize Thread Manager
  *
  * This function initializes the thread management subsystem,
  * preparing necessary data structures and locks for safe
@@ -60,7 +45,7 @@ InitializeThreadManager(void)
 }
 
 /**
- * Allocate Thread ID
+ * @brief Allocate Thread ID
  *
  * Atomically increments and returns a new unique thread ID.
  * This mechanism prevents race conditions when multiple threads
@@ -75,7 +60,7 @@ AllocateThreadId(void)
 }
 
 /**
- * Get Current Thread
+ * @brief Get Current Thread
  *
  * Provides safe concurrent access to retrieve the currently
  * running thread on a specified CPU. Uses spinlock to prevent
@@ -98,7 +83,7 @@ GetCurrentThread(uint32_t __CpuId__)
 }
 
 /**
- * Set Current Thread
+ * @brief Set Current Thread
  *
  * Updates the currently executing thread pointer for the given CPU.
  * Ensures thread safety via the CurrentThreadLock spinlock to protect
@@ -119,7 +104,7 @@ SetCurrentThread(uint32_t __CpuId__, Thread* __ThreadPtr__)
 }
 
 /**
- * Create Thread
+ * @brief Create Thread
  *
  * Allocates and initializes a new thread control block (TCB).
  * Prepares stacks (kernel and possibly user stacks),
@@ -316,7 +301,7 @@ CreateThread(ThreadType __Type__, void* __EntryPoint__, void* __Argument__, Thre
 }
 
 /**
- * Destroy Thread
+ * @brief Destroy Thread
  *
  * Removes thread from all system data structures and frees associated resources.
  * Sets thread state to terminated for identification.
@@ -384,7 +369,7 @@ DestroyThread(Thread* __ThreadPtr__)
 }
 
 /**
- * Suspend Thread
+ * @brief Suspend Thread
  *
  * Suspends execution of the specified thread by setting a suspended flag.
  * If the thread is currently running or ready, transition its state to blocked.
@@ -427,7 +412,7 @@ SuspendThread(Thread* __ThreadPtr__)
 }
 
 /**
- * Resume Thread
+ * @brief Resume Thread
  *
  * Removes suspension on the specified thread.
  * Clears the suspend flag and, if thread is blocked and not waiting,
@@ -462,7 +447,7 @@ ResumeThread(Thread* __ThreadPtr__)
 }
 
 /**
- * Set Thread Priority
+ * @brief Set Thread Priority
  *
  * Updates the priority of a thread.
  * Priority changes affect scheduling decisions and execution frequency.
@@ -485,7 +470,7 @@ SetThreadPriority(Thread* __ThreadPtr__, ThreadPriority __Priority__)
 }
 
 /**
- * Set Thread Affinity
+ * @brief Set Thread Affinity
  *
  * Defines the CPU affinity mask for the thread.
  * Only CPUs included in this mask can schedule the thread.
@@ -508,7 +493,7 @@ SetThreadAffinity(Thread* __ThreadPtr__, uint32_t __CpuMask__)
 }
 
 /**
- * Get CPU Load
+ * @brief Get CPU Load
  *
  * Returns the count of ready threads on the specified CPU.
  * This serves as a heuristic load measurement for scheduling decisions.
@@ -526,7 +511,7 @@ GetCpuLoad(uint32_t __CpuId__)
 }
 
 /**
- * Find Least Loaded CPU
+ * @brief Find Least Loaded CPU
  *
  * Iterates over all CPUs to find the one with lowest ready thread count.
  * This CPU is considered the least loaded and suitable for thread assignment.
@@ -553,7 +538,7 @@ FindLeastLoadedCpu(void)
 }
 
 /**
- * Calculate Optimal CPU for Thread
+ * @brief Calculate Optimal CPU for Thread
  *
  * Determines the best CPU for scheduling a given thread.
  * Honors CPU affinity mask if set, selecting the allowed CPU with lowest load.
@@ -603,7 +588,7 @@ CalculateOptimalCpu(Thread* __ThreadPtr__)
 }
 
 /**
- * Execute Thread
+ * @brief Execute Thread
  *
  * Assigns a thread to run by calculating its optimal CPU based
  * on affinity and load, updating its last CPU assignment,
@@ -631,7 +616,7 @@ ThreadExecute(Thread* __ThreadPtr__)
 }
 
 /**
- * Execute Multiple Threads with Load Balancing
+ * @brief Execute Multiple Threads with Load Balancing
  *
  * Distributes an array of threads over CPUs by calculating their
  * optimal CPU assignments individually, thereby balancing load.
@@ -661,7 +646,7 @@ ThreadExecuteMultiple(Thread** __ThreadArray__, uint32_t __ThreadCount__)
 }
 
 /**
- * Load Balance Existing Threads
+ * @brief Load Balance Existing Threads
  *
  * Checks current load distributions across CPUs.
  * If significant imbalance found, migrates one thread from the most loaded
@@ -723,7 +708,7 @@ LoadBalanceThreads(void)
 }
 
 /**
- * Get System Load Statistics
+ * @brief Get System Load Statistics
  *
  * Computes aggregate load statistics across all CPUs:
  * - Total ready threads
@@ -770,7 +755,7 @@ GetSystemLoadStats(uint32_t* __TotalThreads__, uint32_t* __AverageLoad__, uint32
 }
 
 /**
- * Thread Yield
+ * @brief Thread Yield
  *
  * Causes the calling thread to voluntarily yield execution
  * by triggering a timer interrupt which will invoke the scheduler.
@@ -793,7 +778,7 @@ ThreadYield(void)
 }
 
 /**
- * Thread Sleep
+ * @brief Thread Sleep
  *
  * Puts the current thread to sleep for specified milliseconds.
  * Sets thread to sleeping state with wait reason sleep,
@@ -831,7 +816,7 @@ ThreadSleep(uint64_t __Milliseconds__)
 }
 
 /**
- * Thread Exit
+ * @brief Thread Exit
  *
  * Terminates the currently executing thread with specified exit code.
  * Sets the thread state to zombie to mark it for cleanup.
@@ -877,7 +862,7 @@ ThreadExit(uint32_t __ExitCode__)
 }
 
 /**
- * Find Thread by ID
+ * @brief Find Thread by ID
  *
  * Searches the global thread list for a thread with the specified ID.
  * Access is synchronized to allow safe concurrent searches.
@@ -906,7 +891,7 @@ FindThreadById(uint32_t __ThreadId__)
 }
 
 /**
- * Get Thread Count
+ * @brief Get Thread Count
  *
  * Counts the number of active threads in the system.
  * Access is synchronized with the thread list lock.
@@ -931,7 +916,7 @@ GetThreadCount(void)
 }
 
 /**
- * Wake Sleeping Threads
+ * @brief Wake Sleeping Threads
  *
  * Iterates through the global thread list and wakes any threads
  * that are sleeping and have reached their wakeup time.
@@ -961,7 +946,7 @@ WakeSleepingThreads(void)
 }
 
 /**
- * Dump Thread Info
+ * @brief Dump Thread Info
  *
  * Logs detailed information about the specified thread,
  * including identifiers, state, CPU usage, stacks, memory, and affinity.
@@ -986,7 +971,7 @@ DumpThreadInfo(Thread* __ThreadPtr__)
 }
 
 /**
- * Dump All Threads
+ * @brief Dump All Threads
  *
  * Iterates over the global thread list and writes brief summaries
  * of all threads to the debug output.

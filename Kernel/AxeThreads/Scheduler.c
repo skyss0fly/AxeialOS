@@ -2,21 +2,11 @@
 #include <IDT.h>
 #include <Timer.h>
 
-/*
- * Global Scheduler Data
- *
- * CpuSchedulers: Array of per-CPU scheduler structures, one for each CPU core.
- * Each scheduler manages thread queues, statistics, and scheduling state for
- * its respective CPU. This enables SMP (Symmetric Multi-Processing) support
- * with independent scheduling domains per CPU.
- *
- * Thread safety: Each scheduler has its own spinlock for queue protection.
- * Cross-CPU operations must be handled carefully to avoid race conditions.
- */
+
 CpuScheduler CpuSchedulers[MaxCPUs];
 
 /**
- * Add Thread to Ready Queue
+ * @brief Add Thread to Ready Queue
  * 
  * @param __CpuId__ CPU identifier where the thread will be added
  * @param __ThreadPtr__ Pointer to the thread to add
@@ -66,7 +56,7 @@ AddThreadToReadyQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
 }
 
 /**
- * Remove Thread from Ready Queue
+ * @brief Remove Thread from Ready Queue
  * 
  * @param __CpuId__ CPU identifier from which to remove the thread
  * @return Pointer to the removed thread, or NULL if no thread was ready
@@ -115,7 +105,7 @@ RemoveThreadFromReadyQueue(uint32_t __CpuId__)
 }
 
 /**
- * Add Thread to Waiting Queue
+ * @brief Add Thread to Waiting Queue
  * 
  * @param __CpuId__ CPU identifier where the thread will be added
  * @param __ThreadPtr__ Pointer to the thread to add
@@ -148,7 +138,7 @@ AddThreadToWaitingQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
 }
 
 /**
- * Add Thread to Zombie Queue
+ * @brief Add Thread to Zombie Queue
  * 
  * @param __CpuId__ CPU identifier where the thread will be added
  * @param __ThreadPtr__ Pointer to the thread to add
@@ -183,7 +173,7 @@ AddThreadToZombieQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
 }
 
 /**
- * Add Thread to Sleeping Queue
+ * @brief Add Thread to Sleeping Queue
  * 
  * @param __CpuId__ CPU identifier where the thread will be added
  * @param __ThreadPtr__ Pointer to the thread to add
@@ -216,7 +206,7 @@ AddThreadToSleepingQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
 }
 
 /**
- * Migrate Thread to Different CPU
+ * @brief Migrate Thread to Different CPU
  * 
  * @param __ThreadPtr__ Pointer to the thread to migrate
  * @param __TargetCpuId__ Target CPU id for migration
@@ -239,7 +229,7 @@ MigrateThreadToCpu(Thread* __ThreadPtr__, uint32_t __TargetCpuId__)
 }
 
 /**
- * Get number of threads assigned to a CPU
+ * @brief Get number of threads assigned to a CPU
  * 
  * @param __CpuId__ CPU identifier
  * @return Number of threads currently assigned
@@ -255,7 +245,7 @@ GetCpuThreadCount(uint32_t __CpuId__)
 }
 
 /**
- * Get number of ready threads in CPU's ready queue
+ * @brief Get number of ready threads in CPU's ready queue
  * 
  * @param __CpuId__ CPU identifier
  * @return Number of ready threads
@@ -271,7 +261,7 @@ GetCpuReadyCount(uint32_t __CpuId__)
 }
 
 /**
- * Get total number of context switches on CPU
+ * @brief Get total number of context switches on CPU
  * 
  * @param __CpuId__ CPU identifier
  * @return Number of context switches
@@ -287,7 +277,7 @@ GetCpuContextSwitches(uint32_t __CpuId__)
 }
 
 /**
- * Get CPU load average metric
+ * @brief Get CPU load average metric
  * 
  * @param __CpuId__ CPU identifier
  * @return Load average value
@@ -303,7 +293,7 @@ GetCpuLoadAverage(uint32_t __CpuId__)
 }
 
 /**
- * Wakeup Sleeping Threads whose wakeup time has elapsed
+ * @brief Wakeup Sleeping Threads whose wakeup time has elapsed
  * 
  * @param __CpuId__ CPU identifier on which to operate
  *
@@ -368,7 +358,7 @@ WakeupSleepingThreads(uint32_t __CpuId__)
 }
 
 /**
- * Cleanup Zombie Threads
+ * @brief Cleanup Zombie Threads
  * 
  * @param __CpuId__ CPU identifier
  *
@@ -403,7 +393,7 @@ CleanupZombieThreads(uint32_t __CpuId__)
 }
 
 /**
- * Initialize CPU Scheduler
+ * @brief Initialize CPU Scheduler
  * 
  * @param __CpuId__ CPU identifier
  *
@@ -444,7 +434,7 @@ InitializeCpuScheduler(uint32_t __CpuId__)
 }
 
 /**
- * Save Interrupt Frame to Thread Context
+ * @brief Save Interrupt Frame to Thread Context
  * 
  * @param __ThreadPtr__ Thread to save context to
  * @param __Frame__ Interrupt frame providing CPU register context
@@ -486,7 +476,7 @@ SaveInterruptFrameToThread(Thread* __ThreadPtr__, InterruptFrame* __Frame__)
 }
 
 /**
- * Load Thread Context to Interrupt Frame
+ * @brief Load Thread Context to Interrupt Frame
  * 
  * @param __ThreadPtr__ Thread to load context from
  * @param __Frame__ Interrupt frame to populate with register context
@@ -528,7 +518,7 @@ LoadThreadContextToInterruptFrame(Thread* __ThreadPtr__, InterruptFrame* __Frame
 }
 
 /**
- * Schedule Thread (Per-CPU)
+ * @brief Schedule Thread (Per-CPU)
  * 
  * @param __CpuId__ CPU identifier to perform scheduling on
  * @param __Frame__ Interrupt frame to save/restore thread context
@@ -684,7 +674,7 @@ SelectAgain:
 }
 
 /**
- * Dump CPU Scheduler Info
+ * @brief Dump CPU Scheduler Info
  * 
  * @param __CpuId__ CPU identifier
  *
@@ -710,7 +700,7 @@ DumpCpuSchedulerInfo(uint32_t __CpuId__)
 }
 
 /**
- * Dump All Schedulers
+ * @brief Dump All Schedulers
  * 
  * Prints scheduler info of all CPUs present in the system.
  */
@@ -726,7 +716,7 @@ DumpAllSchedulers(void)
 }
 
 /**
- * Get Next Thread to Run
+ * @brief Get Next Thread to Run
  * 
  * @param __CpuId__ CPU identifier
  * @return Pointer to next thread removed from ready queue
@@ -740,7 +730,7 @@ GetNextThread(uint32_t __CpuId__)
 }
 
 /**
- * Global Scheduler Initialization
+ * @brief Global Scheduler Initialization
  * 
  * Initializes the scheduler on all CPUs detected by SMP.
  * Sets up per-CPU data structures and queues.

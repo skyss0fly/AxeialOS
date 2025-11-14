@@ -1,45 +1,31 @@
 #include <GDT.h>
 
-/*
- * Global GDT Storage
- *
- * GdtEntries - Array of GDT descriptors, sized for maximum possible entries
- * GdtPtr - GDTR register structure containing GDT base address and limit
- */
+/** @brief General GDT Globals */
 GdtEntry
 GdtEntries[MaxGdt/*max*/];
 
 GdtPointer
 GdtPtr;
 
-/*
- * Per-CPU TSS Support
- *
- * CpuTssSelectors - Array of TSS segment selectors, one per CPU
- * CpuTssStructures - Array of TSS structures, one per CPU for SMP support
- */
 uint16_t
 CpuTssSelectors[MaxCPUs];
 
 TaskStateSegment
 CpuTssStructures[MaxCPUs];
 
-/*
- * SetGdtEntry - Configure a GDT Entry
+/**
+ * @brief Set a standard GDT entry.
  *
- * This function sets up a single GDT descriptor with the specified parameters.
- * GDT descriptors are 8 bytes long and contain segment base, limit, access rights,
- * and granularity information.
+ * @details Configures a single GDT entry with base, limit, access, and granularity fields.
+ * 			Used for code, data, and user segments in x86-64 long mode.
  *
- * Parameters:
- *   __Index__      - Index in the GDT array (0-based)
- *   __Base__       - 32-bit segment base address (mostly ignored in 64-bit mode)
- *   __Limit__      - 20-bit segment limit (size of segment)
- *   __Access__     - Access byte containing type, privilege, and flags
- *   __Granularity__ - Granularity byte containing size flags and limit extension
+ * @param __Index__      Index in the GDT.
+ * @param __Base__       Base address of the segment.
+ * @param __Limit__      Segment limit.
+ * @param __Access__     Access byte (segment type and permissions).
+ * @param __Granularity__ Granularity byte (flags and upper limit bits).
  *
- * The function splits the base and limit values across the descriptor fields
- * as required by the x86 GDT format.
+ * @return void
  */
 void
 SetGdtEntry(int __Index__, uint32_t __Base__, uint32_t __Limit__, uint8_t __Access__, uint8_t __Granularity__)
@@ -73,19 +59,19 @@ SetGdtEntry(int __Index__, uint32_t __Base__, uint32_t __Limit__, uint8_t __Acce
     __Index__, __Base__, __Limit__, (unsigned int)__Access__, (unsigned int)__Granularity__);
 }
 
-/*
- * InitializeGdt - Set up the Global Descriptor Table
+/**
+ * @brief Initialize the Global Descriptor Table (GDT).
  *
- * This function initializes the GDT for x86-64 long mode operation. It:
- * 1. Sets up the GDTR register structure
- * 2. Clears all GDT entries
- * 3. Configures standard x86-64 segment descriptors
- * 4. Loads the GDT into the CPU
- * 5. Reloads segment registers for proper operation
- * 6. Initializes the Task State Segment
+ * @details Sets up the GDTR with base and limit.
+ * 			Clears all GDT entries.
+ * 			Configures standard kernel and user code/data segments.
+ * 			Loads the GDT into the CPU using `lgdt`.
+ * 			Reloads segment registers for long mode.
+ * 			Initializes the Task State Segment (TSS).
  *
- * In 64-bit mode, most segmentation is ignored, but the GDT is still required
- * for basic CPU operation and privilege level management.
+ * @return void
+ *
+ * @note Must be called during kernel initialization before enabling interrupts.
  */
 void
 InitializeGdt(void)
@@ -111,7 +97,7 @@ InitializeGdt(void)
     __asm__ volatile("lgdt %0" : : "m"(GdtPtr) : "memory");
 
     /*Reload segment registers for x86-64 long mode*/
-    /*This is a complex sequence that properly sets up segment registers*/
+    /*This is a complex sequence (Is it?) that properly sets up segment registers*/
     __asm__ volatile(
         "mov %0, %%ax\n\t"        /*Load data segment selector*/
         "mov %%ax, %%ds\n\t"      /*Set DS register*/

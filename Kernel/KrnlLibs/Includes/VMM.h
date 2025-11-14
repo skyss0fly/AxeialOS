@@ -77,7 +77,21 @@ void FlushTlb(uint64_t __VirtAddr__);
 void FlushAllTlb(void);
 
 /**
- * Debug Functions
+ * Debug
  */
-void VmmDumpSpace(VirtualMemorySpace *__Space__);
-void VmmDumpStats(void);
+void VmmDumpSpace(VirtualMemorySpace *__Space__);//
+void VmmDumpStats(void);//
+
+/**
+ * Public
+ */
+KEXPORT(InitializeVmm);
+KEXPORT(CreateVirtualSpace);
+KEXPORT(DestroyVirtualSpace);
+KEXPORT(SwitchVirtualSpace);
+KEXPORT(MapPage);
+KEXPORT(UnmapPage);
+KEXPORT(GetPhysicalAddress);
+KEXPORT(GetPageTable);
+KEXPORT(FlushTlb);
+KEXPORT(FlushAllTlb);

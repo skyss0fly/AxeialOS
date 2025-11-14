@@ -190,7 +190,7 @@ extern Thread* CurrentThreads[MaxCPUs];
 /*Thread Manager Core*/
 void InitializeThreadManager(void);
 Thread* GetCurrentThread(uint32_t __CpuId__);
-void SetCurrentThread(uint32_t __CpuId__, Thread* __ThreadPtr__);
+void SetCurrentThread(uint32_t __CpuId__, Thread* __ThreadPtr__);//
 
 /*Thread Lifecycle*/
 Thread* CreateThread(ThreadType __Type__, void* __EntryPoint__, void* __Argument__, ThreadPriority __Priority__);
@@ -212,15 +212,33 @@ Thread* FindThreadById(uint32_t __ThreadId__);
 uint32_t GetThreadCount(void);
 
 /*Load Balancing*/
-uint32_t GetCpuLoad(uint32_t __CpuId__);
-uint32_t FindLeastLoadedCpu(void);
-uint32_t CalculateOptimalCpu(Thread* __ThreadPtr__);
+uint32_t GetCpuLoad(uint32_t __CpuId__);//
+uint32_t FindLeastLoadedCpu(void);//
+uint32_t CalculateOptimalCpu(Thread* __ThreadPtr__);//
 void ThreadExecute(Thread* __ThreadPtr__);
 void ThreadExecuteMultiple(Thread** __ThreadArray__, uint32_t __ThreadCount__);
-void LoadBalanceThreads(void);
-void GetSystemLoadStats(uint32_t* __TotalThreads__, uint32_t* __AverageLoad__,  uint32_t* __MaxLoad__, uint32_t* __MinLoad__);
+void LoadBalanceThreads(void);//
+void GetSystemLoadStats(uint32_t* __TotalThreads__, uint32_t* __AverageLoad__,  uint32_t* __MaxLoad__, uint32_t* __MinLoad__);//
 
 /*Utilities*/
-void WakeSleepingThreads(void);
-void DumpThreadInfo(Thread* __ThreadPtr__);
-void DumpAllThreads(void);
+void WakeSleepingThreads(void);//
+void DumpThreadInfo(Thread* __ThreadPtr__);//
+void DumpAllThreads(void);//
+
+/**
+ * Public
+ */
+KEXPORT(GetCurrentThread);
+KEXPORT(CreateThread);
+KEXPORT(DestroyThread);
+KEXPORT(SuspendThread);
+KEXPORT(ResumeThread);
+KEXPORT(SetThreadPriority);
+KEXPORT(SetThreadAffinity);
+KEXPORT(ThreadYield);
+KEXPORT(ThreadSleep);
+KEXPORT(ThreadExit);
+KEXPORT(FindThreadById);
+KEXPORT(GetThreadCount);
+KEXPORT(ThreadExecute);
+KEXPORT(ThreadExecuteMultiple);
