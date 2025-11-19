@@ -50,6 +50,7 @@ LinkerFlags := \
 #	Includes
 CFlags		+= -IKrnlLibs/Includes
 CFlags		+= -Ilimine
+CFlags		+= -I../KModLibs/Includes
 
 
 TempBuild 	:= .Build

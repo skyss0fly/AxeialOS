@@ -7,6 +7,17 @@
 #include <String.h>
 #include <VFS.h>
 
+/**
+ * @brief Install an ELF module
+ *
+ * @details Loads an ELF object file from the given path, allocates and maps all
+ * 			sections, resolves symbols, applies relocations, and calls the module_init
+ * 			entry point. On success the module remains resident; transient buffers are
+ * 			freed. On failure, allocated memory is released.
+ *
+ * @param __Path__ Path to the ELF module file
+ * @return 0 on success, -1 on failure
+ */
 int
 InstallModule(const char* __Path__)
 {
@@ -559,17 +570,19 @@ InstallModule(const char* __Path__)
     Rec->Next         = 0;
 
     ModuleRegistryAdd(Rec);
-
-    KFree(Syms);
-    KFree(SymBuf);
-    KFree(StrBuf);
-    KFree(ShTbl);
-    KFree(SectionBases);
-
     PSuccess("MOD: Installed %s\n", __Path__);
     return 0;
 }
 
+/**
+ * @brief Uninstall an ELF module
+ *
+ * @details Finds the module record by path, calls module_exit if present, frees all
+ * 			allocated section memory and buffers, and removes the record from registry.
+ *
+ * @param __Path__ Path used to install the module
+ * @return 0 on success, -1 on failure
+ */
 int
 UnInstallModule(const char* __Path__)
 {

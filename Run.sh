@@ -7,4 +7,5 @@ qemu-system-x86_64 \
     -d guest_errors,cpu_reset,int,pcall \
     -D qemu.log \
     -no-reboot \
-    -no-shutdown
+    -no-shutdown \
+	-machine q35

@@ -9,45 +9,86 @@
 
 typedef enum CharIoProtocol
 {
-    /* Subsystem tags (upper 16 bits, when used alone for grouping) */
-    CHARIOC_PCI        = 0x0001,
-    CHARIOC_USB        = 0x0002,
-    CHARIOC_NET        = 0x0003,
-    CHARIOC_TTY        = 0x0004,
-    CHARIOC_SENSOR     = 0x0005,
-    CHARIOC_STORAGECTL = 0x0006,
-    CHARIOC_GENERIC    = 0x00FF,
-    PCI_GET_COUNT      = 0x0001, /* returns long* count */
-    PCI_GET_DEVICE     = 0x0002, /* in: {Bus,Dev,Func}, out: PciDevice */
-    PCI_GET_VD         = 0x0003, /* in: {VendorId,DeviceId,Index}, out: PciDevice */
-    PCI_ENABLE_BM      = 0x0004, /* in: {Bus,Dev,Func,Enable} -> int */
-    PCI_RESYNC_CACHE   = 0x0005, /* no args -> int */
-    PCI_READ_CFG       = 0x0006, /* in: {Bus,Dev,Func,Off,Len}, out: bytes */
-    PCI_WRITE_CFG      = 0x0007, /* in: {Bus,Dev,Func,Off,Len,DataPtr} -> int */
-    USB_GET_DEVCOUNT   = 0x0001, /* returns long* count */
-    USB_GET_DEVINFO    = 0x0002, /* in: {Index}, out: UsbDevInfo */
-    USB_CTRL_XFER      = 0x0003, /* in: UsbCtrlReq*, -> int */
-    USB_BULK_XFER      = 0x0004, /* in: UsbBulkReq*, -> int */
-    NET_GET_IFCOUNT    = 0x0001, /* returns long* count */
-    NET_GET_IFINFO     = 0x0002, /* in: {Index}, out: NetIfInfo */
-    NET_SET_MAC        = 0x0003, /* in: {Index, MAC[6]} -> int */
-    NET_UP             = 0x0004, /* in: {Index} -> int */
-    NET_DOWN           = 0x0005, /* in: {Index} -> int */
-    NET_TX             = 0x0006, /* in: {Index, Buf, Len} -> int */
-    NET_RX             = 0x0007, /* in: {Index, Buf, Cap} -> int */
-    TTY_SET_BAUD       = 0x0001, /* in: {Baud} -> int */
-    TTY_SET_MODE       = 0x0002, /* in: {Databits,Parity,Stop} -> int */
-    TTY_GET_STATUS     = 0x0003, /* out: TtyStatus */
-    TTY_FLUSH          = 0x0004, /* -> int */
-    SENSOR_GET_COUNT   = 0x0001, /* returns long* count */
-    SENSOR_GET_INFO    = 0x0002, /* in: {Index}, out: SensorInfo */
-    SENSOR_READ_VALUE  = 0x0003, /* in: {Index}, out: SensorValue */
-    SCTL_GET_ADAPTERS  = 0x0001, /* returns long* count */
-    SCTL_GET_INFO      = 0x0002, /* in: {Index}, out: ScsiCtlInfo */
-    SCTL_RESET_BUS     = 0x0003, /* -> int */
-    GEN_PING           = 0x0001, /* in/out: optional payload -> int */
-    GEN_GET_VERSION    = 0x0002, /* out: {Major,Minor,Patch} */
-    GEN_GET_CAPS       = 0x0003  /* out: bitmask */
+    /* 32-bit universal opcodes: [31:24]=Domain, [23:16]=Category, [15:0]=Op */
+
+    /* Domain: Generic (0x01) */
+    GenericPing       = 0x01010001,
+    GenericGetVersion = 0x01010002,
+    GenericGetCaps    = 0x01010003,
+
+    /* Domain: Bus (0x02) — applies to PCI, USB, AHCI, NET, etc. */
+    BusGetCount  = 0x02010001,
+    BusGetInfo   = 0x02010002,
+    BusEnumerate = 0x02010003,
+    BusRescan    = 0x02010004,
+    BusReset     = 0x02010005,
+
+    /* Domain: Device (0x03) — target by index or address */
+    DeviceGetInfo      = 0x03010001,
+    DeviceGetByAddress = 0x03010002,
+    DeviceGetByVendor  = 0x03010003,
+    DeviceEnable       = 0x03010004,
+    DeviceDisable      = 0x03010005,
+    DeviceReset        = 0x03010006,
+
+    /* Domain: Config (0x04) — universal config space or control plane */
+    ConfigRead          = 0x04010001,
+    ConfigWrite         = 0x04010002,
+    ConfigMapRegion     = 0x04010003,
+    ConfigUnmapRegion   = 0x04010004,
+    ConfigGetAddressing = 0x04010005,
+
+    /* Domain: Power (0x05) — D-states or link states across buses */
+    PowerGetState = 0x05010001,
+    PowerSetState = 0x05010002,
+
+    /* Domain: DMA (0x06) — coherent buffers and BM toggles */
+    DmaEnableBusMaster  = 0x06010001,
+    DmaDisableBusMaster = 0x06010002,
+    DmaMapBuffer        = 0x06010003,
+    DmaUnmapBuffer      = 0x06010004,
+
+    /* Domain: Interrupt (0x07) — line/MSI/MSI-X in a universal shape */
+    IntGetMode = 0x07010001,
+    IntSetMode = 0x07010002,
+    IntEnable  = 0x07010003,
+    IntDisable = 0x07010004,
+
+    /* Domain: Link (0x08) — topology, bandwidth, link training */
+    LinkGetTopology  = 0x08010001,
+    LinkGetBandwidth = 0x08010002,
+    LinkTrain        = 0x08010003,
+
+    /* Domain: Network (0x09) — universal net ops mapped to devices */
+    NetGetIfCount = 0x09010001,
+    NetGetIfInfo  = 0x09010002,
+    NetSetMac     = 0x09010003,
+    NetUp         = 0x09010004,
+    NetDown       = 0x09010005,
+    NetTx         = 0x09010006,
+    NetRx         = 0x09010007,
+
+    /* Domain: Usb (0x0A) — still usable via universal device addressing */
+    UsbGetDevCount  = 0x0A010001,
+    UsbGetDevInfo   = 0x0A010002,
+    UsbCtrlTransfer = 0x0A010003,
+    UsbBulkTransfer = 0x0A010004,
+
+    /* Domain: Storage (0x0B) — HBA/port-level control (AHCI/SCSI) */
+    StorageGetAdapters = 0x0B010001,
+    StorageGetInfo     = 0x0B010002,
+    StorageResetBus    = 0x0B010003,
+
+    /* Domain: Tty (0x0C) — serial-like endpoints across buses */
+    TtySetBaud   = 0x0C010001,
+    TtySetMode   = 0x0C010002,
+    TtyGetStatus = 0x0C010003,
+    TtyFlush     = 0x0C010004,
+
+    /* Domain: Sensor (0x0D) — hwmon-style sensors via any bus */
+    SensorGetCount  = 0x0D010001,
+    SensorGetInfo   = 0x0D010002,
+    SensorReadValue = 0x0D010003
 } CharIoProtocol;
 
 typedef struct CharBus

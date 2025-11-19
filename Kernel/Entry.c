@@ -4,6 +4,7 @@
 #include <AxeThreads.h>
 #include <BootConsole.h>
 #include <BootImg.h>
+#include <CharBus.h>
 #include <DevFS.h>
 #include <EarlyBootFB.h>
 #include <GDT.h>
@@ -24,6 +25,8 @@
 #include <Timer.h>
 #include <VFS.h>
 #include <VMM.h>
+/** Devs */
+#define __Kernel__
 
 static SpinLock TestLock;
 
