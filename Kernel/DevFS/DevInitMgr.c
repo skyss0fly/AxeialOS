@@ -6,7 +6,6 @@
 #include <VFS.h>
 
 #define MaxDevModules 128
-
 void
 InitRamDiskDevDrvs(void)
 {
