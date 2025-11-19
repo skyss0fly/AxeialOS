@@ -3,12 +3,6 @@
 #include <Dev.h>
 #include <EveryType.h>
 
-/** @note Only diffrence between each subchar device will be the protocols followed for ioctl or
- * anything. */
-
-/**
- * Enums
- */
 typedef enum CharIoProtocol
 {
     /* Subsystem tags (upper 16 bits, when used alone for grouping) */
@@ -52,11 +46,6 @@ typedef enum CharIoProtocol
     GEN_GET_CAPS       = 0x0003  /* out: bitmask */
 } CharIoProtocol;
 
-/**
- * Structures
- */
-
-/** Char bus desc (physical/logical char device) */
 typedef struct CharBus
 {
     const char* Name;    /* e.g., "pci", "ttyS0", "hid0" */
@@ -65,9 +54,6 @@ typedef struct CharBus
 
 } CharBus;
 
-/**
- * Functions
- */
 int CharRegisterBus(CharBus* __Bus__, int __Major__, int __Minor__);
 int CharMakeName(char* __Out__, long __Cap__, const char* __Prefix__, long __Index__);
 int CharMakeSubName(char* __Out__, long __Cap__, const char* __Base__, long __SubIndex__);

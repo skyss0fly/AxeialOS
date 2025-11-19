@@ -9,25 +9,16 @@
 /*Uncomment for Debug Output*/
 // #define DEBUG
 
-/**
- * PrintfState (Pretty much optional)
- */
-
 typedef struct
 {
-
     const char* Format;
     void**      Args;
     int         ArgIndex;
 
 } PrintfState;
 
-/**
- * Format Flags
- */
 typedef struct
 {
-
     int LeftAlign;
     int ShowSign;
     int SpacePrefix;
@@ -40,9 +31,6 @@ typedef struct
 
 } FormatFlags;
 
-/**
- * Logging colors
- */
 #define ClrNormal    0xFFFFFF
 #define ClrInvisible 0x000000
 #define ClrError     0xFF0000
@@ -54,22 +42,14 @@ typedef struct
 #define ClrTang      0xFF8000
 #define ClrDebug     0x808080
 
-/**
- * Debug
- */
 #ifdef DEBUG
-#    define PDebug(fmt, ...) _PDebug(fmt, ##__VA_ARGS__)
+#define PDebug(fmt, ...) _PDebug(fmt, ##__VA_ARGS__)
 #else
-#    define PDebug(fmt, ...)                                                                       \
-        do                                                                                         \
-        {                                                                                          \
-        } while (0)
+#define PDebug(fmt, ...)                                                                           \
+    do                                                                                             \
+    {                                                                                              \
+    } while (0)
 #endif
-
-/**
- * %d, %x, %X, %s, %c, %p, %u, %o, %b
- * Colorformat: \033[fg;bg]text\033[0]
- */
 
 /*Main*/
 void KrnPrintf(const char* __Format__, ...);

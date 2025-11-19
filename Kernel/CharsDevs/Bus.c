@@ -1,22 +1,8 @@
+
 #include <CharBus.h>
 #include <KHeap.h>
 #include <KrnPrintf.h>
 
-/** @section Char bus layer */
-
-/**
- * @brief Open a character device via CharBus shim.
- *
- * This function is invoked by DevFS when a char device node is opened.
- * It resolves the CharBus descriptor from the context pointer, validates
- * the descriptor, and delegates to the driver-provided Open handler.
- *
- * @param __Ctx__ Device-private context pointer (CharBus*).
- *
- * @return Result code from the driver Open handler,
- *         -1 if the descriptor is invalid,
- *          0 if the Open handler is missing.
- */
 static int
 CharBusOpen(void* __Ctx__)
 {
@@ -41,19 +27,6 @@ CharBusOpen(void* __Ctx__)
     return Rc;
 }
 
-/**
- * @brief Close a character device via CharBus shim.
- *
- * This function is invoked by DevFS when a char device node is closed.
- * It resolves the CharBus descriptor, validates it, and delegates to
- * the driver-provided Close handler.
- *
- * @param __Ctx__ Device-private context pointer (CharBus*).
- *
- * @return Result code from the driver Close handler,
- *         -1 if the descriptor is invalid,
- *          0 if the Close handler is missing.
- */
 static int
 CharBusClose(void* __Ctx__)
 {
@@ -78,20 +51,6 @@ CharBusClose(void* __Ctx__)
     return Rc;
 }
 
-/**
- * @brief Read from a character device via CharBus shim.
- *
- * This function is invoked by DevFS when a read operation is performed
- * on a char device node. It validates the descriptor and buffer, then
- * delegates to the driver-provided Read handler.
- *
- * @param __Ctx__ Device-private context pointer (CharBus*).
- * @param __Buf__ Destination buffer for read data.
- * @param __Len__ Maximum number of bytes to read.
- *
- * @return Number of bytes read (>=0),
- *         0 if invalid arguments or handler missing.
- */
 static long
 CharBusRead(void* __Ctx__, void* __Buf__, long __Len__)
 {
@@ -118,20 +77,6 @@ CharBusRead(void* __Ctx__, void* __Buf__, long __Len__)
     return (Got < 0) ? 0 : Got;
 }
 
-/**
- * @brief Write to a character device via CharBus shim.
- *
- * This function is invoked by DevFS when a write operation is performed
- * on a char device node. It validates the descriptor and buffer, then
- * delegates to the driver-provided Write handler.
- *
- * @param __Ctx__ Device-private context pointer (CharBus*).
- * @param __Buf__ Source buffer containing data to write.
- * @param __Len__ Number of bytes to write.
- *
- * @return Number of bytes written (>=0),
- *         -1 if invalid arguments or handler missing.
- */
 static long
 CharBusWrite(void* __Ctx__, const void* __Buf__, long __Len__)
 {
@@ -158,21 +103,6 @@ CharBusWrite(void* __Ctx__, const void* __Buf__, long __Len__)
     return (Put < 0) ? -1 : Put;
 }
 
-/**
- * @brief Perform an ioctl on a character device via CharBus shim.
- *
- * This function is invoked by DevFS when an ioctl operation is performed
- * on a char device node. It validates the descriptor, then delegates to
- * the driver-provided Ioctl handler.
- *
- * @param __Ctx__ Device-private context pointer (CharBus*).
- * @param __Cmd__ Ioctl command code.
- * @param __Arg__ Optional argument pointer for ioctl.
- *
- * @return Result code from the driver Ioctl handler,
- *         -1 if the descriptor is invalid,
- *          0 if the Ioctl handler is missing.
- */
 static int
 CharBusIoctl(void* __Ctx__, unsigned long __Cmd__, void* __Arg__)
 {
@@ -198,25 +128,6 @@ CharBusIoctl(void* __Ctx__, unsigned long __Cmd__, void* __Arg__)
     return Rc;
 }
 
-/** @section Main Shit */
-
-/**
- * @brief Register a character device with DevFS.
- *
- * Wraps a CharBus descriptor into a CharDevOps shim and registers it
- * with DevFS as a char device node. DevFS stores the CharBus pointer
- * as device-private context.
- *
- * @param __Bus__   Pointer to the CharBus descriptor (must be permanent memory).
- * @param __Major__ Major device number to assign.
- * @param __Minor__ Minor device number to assign.
- *
- * @return 0 on success,
- *         negative error code on failure.
- *
- * @note The CharBus descriptor must remain valid for the lifetime of
- *       the device node. Do not pass stack-allocated descriptors.
- */
 int
 CharRegisterBus(CharBus* __Bus__, int __Major__, int __Minor__)
 {

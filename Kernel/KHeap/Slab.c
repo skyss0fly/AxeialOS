@@ -1,15 +1,5 @@
 #include <KHeap.h>
 
-/**
- * @brief Retrieve the appropriate slab cache for a given size.
- *
- * @details Iterates through the available slab caches and returns the smallest
- * 			cache that can fit the requested allocation size.
- *
- * @param __Size__ Requested allocation size in bytes.
- *
- * @return Pointer to the matching SlabCache, or NULL if none found.
- */
 SlabCache*
 GetSlabCache(size_t __Size__)
 {
@@ -24,17 +14,6 @@ GetSlabCache(size_t __Size__)
     return 0; /*No suitable cache found*/
 }
 
-/**
- * @brief Allocate a new slab.
- *
- * @details Allocates a single physical page and initializes it as a slab:
- * 			Sets metadata fields (object size, free count, magic).
- * 			Builds a free list of objects within the slab.
- *
- * @param __ObjectSize__ Size of each object in the slab.
- *
- * @return Pointer to the newly allocated Slab, or NULL if out of memory.
- */
 Slab*
 AllocateSlab(uint32_t __ObjectSize__)
 {
@@ -76,15 +55,6 @@ AllocateSlab(uint32_t __ObjectSize__)
     return NewSlab;
 }
 
-/**
- * @brief Free a slab.
- *
- * @details Converts the slab’s virtual address back to physical and frees the page.
- *
- * @param __Slab__ Pointer to the slab to free.
- *
- * @return void
- */
 void
 FreeSlab(Slab* __Slab__)
 {

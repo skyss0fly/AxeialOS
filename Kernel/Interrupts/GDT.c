@@ -1,6 +1,5 @@
 #include <GDT.h>
 
-/** @brief General GDT Globals */
 GdtEntry GdtEntries[MaxGdt /*max*/];
 
 GdtPointer GdtPtr;
@@ -9,20 +8,6 @@ uint16_t CpuTssSelectors[MaxCPUs];
 
 TaskStateSegment CpuTssStructures[MaxCPUs];
 
-/**
- * @brief Set a standard GDT entry.
- *
- * @details Configures a single GDT entry with base, limit, access, and granularity fields.
- * 			Used for code, data, and user segments in x86-64 long mode.
- *
- * @param __Index__      Index in the GDT.
- * @param __Base__       Base address of the segment.
- * @param __Limit__      Segment limit.
- * @param __Access__     Access byte (segment type and permissions).
- * @param __Granularity__ Granularity byte (flags and upper limit bits).
- *
- * @return void
- */
 void
 SetGdtEntry(int      __Index__,
             uint32_t __Base__,
@@ -57,20 +42,6 @@ SetGdtEntry(int      __Index__,
            (unsigned int)__Granularity__);
 }
 
-/**
- * @brief Initialize the Global Descriptor Table (GDT).
- *
- * @details Sets up the GDTR with base and limit.
- * 			Clears all GDT entries.
- * 			Configures standard kernel and user code/data segments.
- * 			Loads the GDT into the CPU using `lgdt`.
- * 			Reloads segment registers for long mode.
- * 			Initializes the Task State Segment (TSS).
- *
- * @return void
- *
- * @note Must be called during kernel initialization before enabling interrupts.
- */
 void
 InitializeGdt(void)
 {

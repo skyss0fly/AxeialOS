@@ -1,17 +1,6 @@
+
 #include <BlockDev.h>
 
-/**
- * @brief Construct a block device name
- *
- * Generates a disk name string by appending a suffix letter to a prefix.
- * For example, "sd" + 0 -> "sda", "sd" + 1 -> "sdb".
- *
- * @param __Out__    Output buffer for the name
- * @param __Cap__    Capacity of the output buffer
- * @param __Prefix__ Prefix string (e.g., "sd")
- * @param __Index__  Disk index (0-based)
- * @return 0 on success, -1 on invalid arguments, -2 if buffer too small
- */
 int
 BlockMakeName(char* __Out__, long __Cap__, const char* __Prefix__, long __Index__)
 {
@@ -39,18 +28,6 @@ BlockMakeName(char* __Out__, long __Cap__, const char* __Prefix__, long __Index_
     return 0;
 }
 
-/**
- * @brief Construct a block partition name
- *
- * Generates a partition name string by appending a numeric suffix
- * to a disk name. For example, "sda" + 1 -> "sda1".
- *
- * @param __Out__       Output buffer for the name
- * @param __Cap__       Capacity of the output buffer
- * @param __DiskName__  Disk name string (e.g., "sda")
- * @param __PartIndex__ Partition index (1-based)
- * @return 0 on success, -1 on invalid arguments, -2 if buffer too small
- */
 int
 BlockMakePartName(char* __Out__, long __Cap__, const char* __DiskName__, long __PartIndex__)
 {

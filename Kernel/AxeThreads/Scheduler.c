@@ -1,10 +1,10 @@
+
 #include <AxeSchd.h>
 #include <IDT.h>
 #include <Timer.h>
 
 CpuScheduler CpuSchedulers[MaxCPUs];
 
-/** @brief FX/FPU Helpers */
 static inline void
 ThreadFxSave(void* __State__)
 {
@@ -17,17 +17,6 @@ ThreadFxRestore(const void* __State__)
     __asm__ volatile("fxrstor %0" ::"m"(*(const char (*)[512])__State__));
 }
 
-/**
- * @brief Add Thread to Ready Queue
- *
- * @param __CpuId__ CPU identifier where the thread will be added
- * @param __ThreadPtr__ Pointer to the thread to add
- *
- * Adds a thread to the tail of the ready queue on the specified CPU.
- * Sets thread state to ready and updates last CPU assignment atomically.
- * Uses spinlock to protect the ready queue during modification.
- * Increments the ready count atomically.
- */
 void
 AddThreadToReadyQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
 {
@@ -71,17 +60,6 @@ AddThreadToReadyQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
     __atomic_fetch_add(&Scheduler->ReadyCount, 1, __ATOMIC_SEQ_CST);
 }
 
-/**
- * @brief Remove Thread from Ready Queue
- *
- * @param __CpuId__ CPU identifier from which to remove the thread
- * @return Pointer to the removed thread, or NULL if no thread was ready
- *
- * Removes a thread from the head of the ready queue on the specified CPU.
- * Uses spinlock to protect the ready queue during modification.
- * Decrements the ready count atomically.
- * Returns the removed thread pointer.
- */
 Thread*
 RemoveThreadFromReadyQueue(uint32_t __CpuId__)
 {
@@ -124,17 +102,6 @@ RemoveThreadFromReadyQueue(uint32_t __CpuId__)
     return ThreadPtr;
 }
 
-/**
- * @brief Add Thread to Waiting Queue
- *
- * @param __CpuId__ CPU identifier where the thread will be added
- * @param __ThreadPtr__ Pointer to the thread to add
- *
- * Adds a thread to the waiting queue on the specified CPU.
- * Sets thread state to blocked atomically.
- * Thread is added at the head of the waiting queue (LIFO).
- * Uses spinlock for safe queue modification.
- */
 void
 AddThreadToWaitingQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
 {
@@ -159,16 +126,6 @@ AddThreadToWaitingQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
     ReleaseSpinLock(&Scheduler->SchedulerLock);
 }
 
-/**
- * @brief Add Thread to Zombie Queue
- *
- * @param __CpuId__ CPU identifier where the thread will be added
- * @param __ThreadPtr__ Pointer to the thread to add
- *
- * Marks a thread as zombie and adds it to the zombie queue.
- * The thread count is decremented to reflect thread termination.
- * Uses spinlock for safe queue modification.
- */
 void
 AddThreadToZombieQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
 {
@@ -196,17 +153,6 @@ AddThreadToZombieQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
     __atomic_fetch_sub(&Scheduler->ThreadCount, 1, __ATOMIC_SEQ_CST);
 }
 
-/**
- * @brief Add Thread to Sleeping Queue
- *
- * @param __CpuId__ CPU identifier where the thread will be added
- * @param __ThreadPtr__ Pointer to the thread to add
- *
- * Adds thread to the sleeping queue.
- * Sets thread state to sleeping atomically.
- * Thread is added at the head of sleeping queue.
- * Uses spinlock to protect the queue during modification.
- */
 void
 AddThreadToSleepingQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
 {
@@ -231,15 +177,6 @@ AddThreadToSleepingQueue(uint32_t __CpuId__, Thread* __ThreadPtr__)
     ReleaseSpinLock(&Scheduler->SchedulerLock);
 }
 
-/**
- * @brief Migrate Thread to Different CPU
- *
- * @param __ThreadPtr__ Pointer to the thread to migrate
- * @param __TargetCpuId__ Target CPU id for migration
- *
- * Migrates a thread only if it is in ready state.
- * Updates last CPU assignment and adds it to the target CPU's ready queue.
- */
 void
 MigrateThreadToCpu(Thread* __ThreadPtr__, uint32_t __TargetCpuId__)
 {
@@ -256,14 +193,6 @@ MigrateThreadToCpu(Thread* __ThreadPtr__, uint32_t __TargetCpuId__)
     }
 }
 
-/**
- * @brief Get number of threads assigned to a CPU
- *
- * @param __CpuId__ CPU identifier
- * @return Number of threads currently assigned
- *
- * Atomically loads the thread count for the CPU.
- */
 uint32_t
 GetCpuThreadCount(uint32_t __CpuId__)
 {
@@ -274,14 +203,6 @@ GetCpuThreadCount(uint32_t __CpuId__)
     return __atomic_load_n(&CpuSchedulers[__CpuId__].ThreadCount, __ATOMIC_SEQ_CST);
 }
 
-/**
- * @brief Get number of ready threads in CPU's ready queue
- *
- * @param __CpuId__ CPU identifier
- * @return Number of ready threads
- *
- * Atomically loads the ready thread count.
- */
 uint32_t
 GetCpuReadyCount(uint32_t __CpuId__)
 {
@@ -292,14 +213,6 @@ GetCpuReadyCount(uint32_t __CpuId__)
     return __atomic_load_n(&CpuSchedulers[__CpuId__].ReadyCount, __ATOMIC_SEQ_CST);
 }
 
-/**
- * @brief Get total number of context switches on CPU
- *
- * @param __CpuId__ CPU identifier
- * @return Number of context switches
- *
- * Atomically loads context switch count.
- */
 uint64_t
 GetCpuContextSwitches(uint32_t __CpuId__)
 {
@@ -310,14 +223,6 @@ GetCpuContextSwitches(uint32_t __CpuId__)
     return __atomic_load_n(&CpuSchedulers[__CpuId__].ContextSwitches, __ATOMIC_SEQ_CST);
 }
 
-/**
- * @brief Get CPU load average metric
- *
- * @param __CpuId__ CPU identifier
- * @return Load average value
- *
- * Atomically retrieves the current load average of the CPU.
- */
 uint32_t
 GetCpuLoadAverage(uint32_t __CpuId__)
 {
@@ -328,16 +233,6 @@ GetCpuLoadAverage(uint32_t __CpuId__)
     return __atomic_load_n(&CpuSchedulers[__CpuId__].LoadAverage, __ATOMIC_SEQ_CST);
 }
 
-/**
- * @brief Wakeup Sleeping Threads whose wakeup time has elapsed
- *
- * @param __CpuId__ CPU identifier on which to operate
- *
- * Iterates over the sleeping queue and awakens any thread whose wakeup time
- * has arrived. Removes such threads from the sleeping queue and adds them back
- * to the ready queue for scheduling.
- * Uses spinlock for safe queue access.
- */
 void
 WakeupSleepingThreads(uint32_t __CpuId__)
 {
@@ -399,15 +294,6 @@ WakeupSleepingThreads(uint32_t __CpuId__)
     ReleaseSpinLock(&Scheduler->SchedulerLock);
 }
 
-/**
- * @brief Cleanup Zombie Threads
- *
- * @param __CpuId__ CPU identifier
- *
- * Removes all zombie threads from the queue for cleanup.
- * Destroys the thread objects after removing them from the queue.
- * Uses spinlock for safe removal from zombie queue.
- */
 void
 CleanupZombieThreads(uint32_t __CpuId__)
 {
@@ -436,15 +322,6 @@ CleanupZombieThreads(uint32_t __CpuId__)
     }
 }
 
-/**
- * @brief Initialize CPU Scheduler
- *
- * @param __CpuId__ CPU identifier
- *
- * Setup scheduler data structures and counters for the given CPU.
- * Initializes queues to empty and resets counts.
- * Initializes the scheduler spinlock with descriptive name.
- */
 void
 InitializeCpuScheduler(uint32_t __CpuId__)
 {
@@ -479,15 +356,6 @@ InitializeCpuScheduler(uint32_t __CpuId__)
     PDebug("CPU %u scheduler initialized\n", __CpuId__);
 }
 
-/**
- * @brief Save Interrupt Frame to Thread Context
- *
- * @param __ThreadPtr__ Thread to save context to
- * @param __Frame__ Interrupt frame providing CPU register context
- *
- * Copies CPU register state from the interrupt frame to the thread's saved context.
- * This captures the thread's execution state before a context switch.
- */
 void
 SaveInterruptFrameToThread(Thread* __ThreadPtr__, InterruptFrame* __Frame__)
 {
@@ -523,15 +391,6 @@ SaveInterruptFrameToThread(Thread* __ThreadPtr__, InterruptFrame* __Frame__)
     Context->Ss     = __Frame__->Ss;
 }
 
-/**
- * @brief Load Thread Context to Interrupt Frame
- *
- * @param __ThreadPtr__ Thread to load context from
- * @param __Frame__ Interrupt frame to populate with register context
- *
- * Loads saved CPU register state from the thread context into the interrupt frame.
- * Used to restore thread state on a context switch in.
- */
 void
 LoadThreadContextToInterruptFrame(Thread* __ThreadPtr__, InterruptFrame* __Frame__)
 {
@@ -576,18 +435,6 @@ LoadThreadContextToInterruptFrame(Thread* __ThreadPtr__, InterruptFrame* __Frame
     __Frame__->Ss     = Context->Ss;
 }
 
-/**
- * @brief Schedule Thread (Per-CPU)
- *
- * @param __CpuId__ CPU identifier to perform scheduling on
- * @param __Frame__ Interrupt frame to save/restore thread context
- *
- * This function selects the next thread to run on the CPU.
- * Implements a preemptive priority-based scheduling with frequency cooldown.
- * Handles context saving for current thread, state transitions, waking sleepers,
- * cleaning zombies, and loading the next thread context.
- * Updates CPU and thread statistics including scheduling ticks and context switches.
- */
 void
 Schedule(uint32_t __CpuId__, InterruptFrame* __Frame__)
 {
@@ -687,10 +534,6 @@ SelectAgain:
     uint32_t Stride = 1;
     switch (NextThread->Priority)
     {
-        /**
-         * NOTE: Priority MAY vary based on CPU load.
-         * Threads on least loaded CPUs may not be restricted by priority.
-         */
         case ThreadPrioritykernel:
             Stride = 1;
             break; /* Kernel threads run constantly */
@@ -753,14 +596,6 @@ SelectAgain:
     SetCurrentThread(__CpuId__, NextThread);
 }
 
-/**
- * @brief Dump CPU Scheduler Info
- *
- * @param __CpuId__ CPU identifier
- *
- * Logs detailed scheduler state including thread counts, ready queues,
- * context switch counts and current running thread ID for a CPU.
- */
 void
 DumpCpuSchedulerInfo(uint32_t __CpuId__)
 {
@@ -781,43 +616,21 @@ DumpCpuSchedulerInfo(uint32_t __CpuId__)
           Scheduler->CurrentThread ? Scheduler->CurrentThread->ThreadId : 0);
 }
 
-/**
- * @brief Dump All Schedulers
- *
- * Prints scheduler info of all CPUs present in the system.
- */
 void
 DumpAllSchedulers(void)
 {
-    PInfo("=== Scheduler Status ===\n");
-
     for (uint32_t CpuIndex = 0; CpuIndex < Smp.CpuCount; CpuIndex++)
     {
         DumpCpuSchedulerInfo(CpuIndex);
     }
 }
 
-/**
- * @brief Get Next Thread to Run
- *
- * @param __CpuId__ CPU identifier
- * @return Pointer to next thread removed from ready queue
- *
- * Removes and returns the next ready thread from the CPU's ready queue.
- */
 Thread*
 GetNextThread(uint32_t __CpuId__)
 {
     return RemoveThreadFromReadyQueue(__CpuId__);
 }
 
-/**
- * @brief Global Scheduler Initialization
- *
- * Initializes the scheduler on all CPUs detected by SMP.
- * Sets up per-CPU data structures and queues.
- * Prints success message on completion.
- */
 void
 InitializeScheduler(void)
 {

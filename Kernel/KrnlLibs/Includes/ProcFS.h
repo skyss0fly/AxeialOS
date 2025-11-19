@@ -6,9 +6,6 @@
 #include <Process.h>
 #include <VFS.h>
 
-/**
- * Enums
- */
 typedef enum ProcFsNodeKind
 {
     PNodeNone    = 0, /**< Invalid */
@@ -28,9 +25,6 @@ typedef enum ProcFsEntryType
 
 } ProcFsEntryType;
 
-/**
- * Sturctures
- */
 typedef struct ProcFsNode
 {
     ProcFsNodeKind  Kind;  /**< Node kind */
@@ -47,18 +41,12 @@ typedef struct ProcFsContext
 
 } ProcFsContext;
 
-/**
- * @brief Kind of procfs entry.
- */
 typedef enum ProcFsEntryKind
 {
     PF_DIR  = 0,
     PF_FILE = 1
 } ProcFsEntryKind;
 
-/**
- * @brief Child entry metadata stored in a directory's private context.
- */
 typedef struct ProcFsChild
 {
     char*           Name; /**< entry name */
@@ -66,9 +54,6 @@ typedef struct ProcFsChild
     ProcFsEntryKind Kind; /**< dir or file */
 } ProcFsChild;
 
-/**
- * @brief Directory private context: dynamic array of children.
- */
 typedef struct ProcFsDirPriv
 {
     ProcFsChild* Children;
@@ -78,9 +63,6 @@ typedef struct ProcFsDirPriv
     long         IsFdDir; /**< 1 if /proc/<pid>/fd */
 } ProcFsDirPriv;
 
-/**
- * @brief File private context: ties file to process and role.
- */
 typedef struct ProcFsFilePriv
 {
     long            Pid;   /**< process id */
@@ -88,9 +70,6 @@ typedef struct ProcFsFilePriv
     ProcFsEntryType Entry; /**< stat/status/fd item */
 } ProcFsFilePriv;
 
-/**
- * Functions
- */
 int         ProcFsInit(void);
 Superblock* ProcFsMountImpl(void* __Device__, void* __Options__);
 int         ProcFsRegisterMount(const char* __MountPath__, Superblock* __Super__);

@@ -3,14 +3,8 @@
 #include <AllTypes.h>
 #include <KrnFont.h>
 
-/**
- * Early boot time console for debugging
- * and boot time information
- */
-
 typedef struct
 {
-
     uint32_t* FrameBuffer;
     uint32_t  FrameBufferW;
     uint32_t  FrameBufferH;

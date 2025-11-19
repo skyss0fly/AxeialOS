@@ -3,19 +3,6 @@
 /* Global module memory manager state */
 ModuleMemoryManager ModMem = {0, 0, 0};
 
-/**
- * @brief Optional Information: This was kind of an
- * Optional feature because I did not want to use KHeap
- * for the modules because I want to keep a clean barrier
- * between the Kernel Object memory and Module Object memory.
- */
-
-/**
- * @brief Initialize the module memory manager
- *
- * Sets up the memory manager state and logs the available memory ranges.
- * Must be called before any module memory allocations.
- */
 void
 ModMemInit(void)
 {
@@ -35,17 +22,6 @@ ModMemInit(void)
            (unsigned long long)(ModDataBase + ModDataSize - 1));
 }
 
-/**
- * @brief Allocate memory for module sections
- *
- * Allocates page-aligned memory in the appropriate arena (text or data)
- * and maps physical pages to virtual addresses. Text sections get executable
- * permissions, while data sections are writable but non-executable.
- *
- * @param __Size__ Size of memory to allocate in bytes
- * @param __IsText__ Non-zero for text sections, zero for data sections
- * @return Virtual address of allocated memory, NULL on failure
- */
 void*
 ModMalloc(size_t __Size__, int __IsText__)
 {
@@ -123,15 +99,6 @@ ModMalloc(size_t __Size__, int __IsText__)
     return (void*)Start;
 }
 
-/**
- * @brief Free module memory
- *
- * Unmaps and frees the physical pages associated with the given virtual
- * address range. Used when unloading modules or cleaning up failed loads.
- *
- * @param __Addr__ Virtual address of memory to free
- * @param __Size__ Size of memory region in bytes
- */
 void
 ModFree(void* __Addr__, size_t __Size__)
 {

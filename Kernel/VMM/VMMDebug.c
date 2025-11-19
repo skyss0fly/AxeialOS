@@ -1,18 +1,8 @@
 #include <VMM.h>
 
-/**
- * @brief Check if a physical address is valid.
- *
- * @details Ensures the address is non-zero, page-aligned,
- *          and lies within a PMM-managed memory region.
- *
- * @param __PhysAddr__ Physical address to validate.
- * @return 1 if valid, 0 otherwise.
- */
 static int
 IsValidPhysicalAddress(uint64_t __PhysAddr__)
 {
-
     if (__PhysAddr__ == 0)
     {
         return 0;
@@ -25,7 +15,6 @@ IsValidPhysicalAddress(uint64_t __PhysAddr__)
 
     for (uint32_t Index = 0; Index < Pmm.RegionCount; Index++)
     {
-
         uint64_t RegionStart = Pmm.Regions[Index].Base;
         uint64_t RegionEnd   = RegionStart + Pmm.Regions[Index].Length;
 
@@ -38,19 +27,9 @@ IsValidPhysicalAddress(uint64_t __PhysAddr__)
     return 0;
 }
 
-/**
- * @brief Check if a virtual address belongs to the HHDM.
- *
- * @details Converts the virtual address to its physical counterpart
- *          using the HHDM offset, then validates it.
- *
- * @param __VirtAddr__ Virtual address to validate.
- * @return 1 if valid, 0 otherwise.
- */
 static int
 IsValidHhdmAddress(uint64_t __VirtAddr__)
 {
-
     if (__VirtAddr__ < Vmm.HhdmOffset)
     {
         return 0;
@@ -61,19 +40,9 @@ IsValidHhdmAddress(uint64_t __VirtAddr__)
     return IsValidPhysicalAddress(PhysAddr);
 }
 
-/**
- * @brief Check if a pointer is safe to dereference.
- *
- * @details Validates that the pointer is non-null and maps
- *          to a valid HHDM address.
- *
- * @param __Ptr__ Pointer to validate.
- * @return 1 if safe, 0 otherwise.
- */
 static int
 IsSafeToAccess(uint64_t* __Ptr__)
 {
-
     if (!__Ptr__)
     {
         return 0;
@@ -84,19 +53,9 @@ IsSafeToAccess(uint64_t* __Ptr__)
     return IsValidHhdmAddress(VirtAddr);
 }
 
-/**
- * @brief Dump information about a virtual memory space.
- *
- * @details Prints PML4 addresses, reference count, and
- *          counts mapped pages by walking the page tables.
- *
- * @param __Space__ Pointer to the VirtualMemorySpace structure.
- * @return void
- */
 void
 VmmDumpSpace(VirtualMemorySpace* __Space__)
 {
-
     if (!__Space__)
     {
         PError("Cannot dump null virtual space\n");
@@ -220,18 +179,9 @@ VmmDumpSpace(VirtualMemorySpace* __Space__)
     KrnPrintf("  Mapped Pages: %lu (%lu KB)\n", MappedPages, MappedPages * 4);
 }
 
-/**
- * @brief Dump overall VMM statistics.
- *
- * @details Prints HHDM offset, kernel PML4, memory map regions,
- *          and kernel space information if available.
- *
- * @return void
- */
 void
 VmmDumpStats(void)
 {
-
     if (!Vmm.HhdmOffset)
     {
         PError("VMM not properly initialized - no HHDM offset\n");

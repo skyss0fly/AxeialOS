@@ -7,17 +7,6 @@
 #include <String.h>
 #include <VFS.h>
 
-/**
- * @brief Install an ELF module
- *
- * @details Loads an ELF object file from the given path, allocates and maps all
- * 			sections, resolves symbols, applies relocations, and calls the module_init
- * 			entry point. On success the module remains resident; transient buffers are
- * 			freed. On failure, allocated memory is released.
- *
- * @param __Path__ Path to the ELF module file
- * @return 0 on success, -1 on failure
- */
 int
 InstallModule(const char* __Path__)
 {
@@ -433,42 +422,42 @@ InstallModule(const char* __Path__)
 
                 case 2U:
                 case 4U:
-                {
-                    int64_t P      = (int64_t)((uint64_t)Loc + 4);
-                    int64_t Disp64 = (int64_t)S - P;
-                    *(int32_t*)Loc = (int32_t)Disp64;
-                    break;
-                }
+                    {
+                        int64_t P      = (int64_t)((uint64_t)Loc + 4);
+                        int64_t Disp64 = (int64_t)S - P;
+                        *(int32_t*)Loc = (int32_t)Disp64;
+                        break;
+                    }
 
                 case 8U:
                     *(uint64_t*)Loc = (uint64_t)SectionBases[TgtIdx] + A;
                     break;
 
                 case 9U:
-                {
-                    int64_t  P       = (int64_t)((uint64_t)Loc + 4);
-                    __int128 S128    = (__int128)((int64_t)S);
-                    __int128 A128    = (__int128)((int64_t)A);
-                    __int128 P128    = (__int128)P;
-                    __int128 Disp128 = S128 + A128 - P128;
-                    int32_t  Disp32  = (int32_t)Disp128;
-                    *(int32_t*)Loc   = Disp32;
-                    break;
-                }
+                    {
+                        int64_t  P       = (int64_t)((uint64_t)Loc + 4);
+                        __int128 S128    = (__int128)((int64_t)S);
+                        __int128 A128    = (__int128)((int64_t)A);
+                        __int128 P128    = (__int128)P;
+                        __int128 Disp128 = S128 + A128 - P128;
+                        int32_t  Disp32  = (int32_t)Disp128;
+                        *(int32_t*)Loc   = Disp32;
+                        break;
+                    }
 
                 case 10U:
-                {
-                    uint64_t Val    = S + A;
-                    *(uint32_t*)Loc = (uint32_t)Val;
-                    break;
-                }
+                    {
+                        uint64_t Val    = S + A;
+                        *(uint32_t*)Loc = (uint32_t)Val;
+                        break;
+                    }
 
                 case 11U:
-                {
-                    int64_t Val    = (int64_t)(S + A);
-                    *(int32_t*)Loc = (int32_t)Val;
-                    break;
-                }
+                    {
+                        int64_t Val    = (int64_t)(S + A);
+                        *(int32_t*)Loc = (int32_t)Val;
+                        break;
+                    }
 
                 default:
                     PWarn("ELF: RELOC unsupported type\n");
@@ -581,15 +570,6 @@ InstallModule(const char* __Path__)
     return 0;
 }
 
-/**
- * @brief Uninstall an ELF module
- *
- * @details Finds the module record by path, calls module_exit if present, frees all
- * 			allocated section memory and buffers, and removes the record from registry.
- *
- * @param __Path__ Path used to install the module
- * @return 0 on success, -1 on failure
- */
 int
 UnInstallModule(const char* __Path__)
 {

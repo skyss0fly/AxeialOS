@@ -4,9 +4,6 @@
 #include <GDT.h>
 #include <KrnPrintf.h>
 
-/**
- * PIC const
- */
 #define PicMasterCommand 0x20
 #define PicMasterData    0x21
 #define PicSlaveCommand  0xA0
@@ -23,16 +20,10 @@
 #define PicMaskAllExceptTimer 0xFE
 #define PicMaskAll            0xFF
 
-/**
- * IDT const
- */
 #define IdtMaxEntries    256
 #define IdtIrqBase       32
 #define IdtMaxIsrEntries 20
 
-/**
- * RFLAGS Bit Positions
- */
 #define RflagsCarryFlag     0
 #define RflagsParityFlag    2
 #define RflagsAuxFlag       4
@@ -43,14 +34,8 @@
 #define RflagsDirectionFlag 10
 #define RflagsOverflowFlag  11
 
-/**
- * Locals
- */
 #define MaxIdt 256
 
-/**
- * IDT Entry
- */
 typedef struct
 {
     uint16_t OffsetLow;
@@ -62,18 +47,12 @@ typedef struct
     uint32_t Reserved;
 } __attribute__((packed)) IdtEntry;
 
-/**
- * IDT Pointer
- */
 typedef struct
 {
     uint16_t Limit;
     uint64_t Base;
 } __attribute__((packed)) IdtPointer;
 
-/**
- * Interrupt Frame
- */
 typedef struct
 {
     uint64_t Rax, Rbx, Rcx, Rdx, Rsi, Rdi, Rbp;    /* highest address */
@@ -87,22 +66,13 @@ typedef struct
     uint64_t Ss;                                   /* CPU */
 } __attribute__((packed)) InterruptFrame;
 
-/**
- * Globals
- */
 extern IdtEntry    IdtEntries[IdtMaxEntries];
 extern IdtPointer  IdtPtr;
 extern const char* ExceptionNames[32];
 
-/**
- * Constants
- */
 #define IdtTypeInterruptGate 0x8E
 #define IdtTypeTrapGate      0x8F
 
-/**
- * Functions
- */
 void SetIdtEntry(int __Index__, uint64_t __Handler__, uint16_t __Selector__, uint8_t __Flags__);
 void InitializePic(void);
 void InitializeIdt(void);
@@ -114,9 +84,6 @@ void DumpControlRegisters(void);
 void DumpInstruction(uint64_t __Rip__);
 void DumpMemory(uint64_t __Address__, int __Bytes__);
 
-/**
- * ISR Declarations
- */
 extern void Isr0(void);
 extern void Isr1(void);
 extern void Isr2(void);
@@ -138,9 +105,6 @@ extern void Isr17(void);
 extern void Isr18(void);
 extern void Isr19(void);
 
-/**
- * IRQ Declarations
- */
 extern void Irq0(void);
 extern void Irq1(void);
 extern void Irq2(void);
@@ -158,7 +122,4 @@ extern void Irq13(void);
 extern void Irq14(void);
 extern void Irq15(void);
 
-/**
- * Public
- */
 KEXPORT(SetIdtEntry);

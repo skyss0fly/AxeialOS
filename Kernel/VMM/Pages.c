@@ -1,27 +1,8 @@
 #include <VMM.h>
 
-/**
- * @brief Retrieve or create a page table for a given virtual address.
- *
- * @details Walks the page table hierarchy starting from the provided PML4,
- * 			down to the requested level (PDPT, PD, or PT). If the required
- * 			intermediate tables are missing and @p __Create__ is non-zero,
- * 			new tables are allocated and initialized.
- *
- * @param __Pml4__    Pointer to the root Page Map Level 4 (PML4).
- * @param __VirtAddr__ Virtual address for which the page table is needed.
- * @param __Level__   Target level (1 = PT, 2 = PD, 3 = PDPT).
- * @param __Create__  If non-zero, missing tables are created.
- *
- * @return Pointer to the page table at the requested level,
- *         or NULL if not present and @p __Create__ is zero.
- *
- * @note This function is critical for mapping and unmapping pages.
- */
 uint64_t*
 GetPageTable(uint64_t* __Pml4__, uint64_t __VirtAddr__, int __Level__, int __Create__)
 {
-
     uint32_t Pml4Index = (__VirtAddr__ >> 39) & 0x1FF;
     uint32_t PdptIndex = (__VirtAddr__ >> 30) & 0x1FF;
     uint32_t PdIndex   = (__VirtAddr__ >> 21) & 0x1FF;
@@ -31,10 +12,8 @@ GetPageTable(uint64_t* __Pml4__, uint64_t __VirtAddr__, int __Level__, int __Cre
 
     for (int Level = 4; Level > __Level__; Level--)
     {
-
         if (!(CurrentTable[CurrentIndex] & PTEPRESENT))
         {
-
             if (!__Create__)
             {
                 return NULL;
@@ -43,7 +22,6 @@ GetPageTable(uint64_t* __Pml4__, uint64_t __VirtAddr__, int __Level__, int __Cre
             uint64_t NewTablePhys = AllocPage();
             if (!NewTablePhys)
             {
-
                 PError("Failed to allocate page table at level %d\n", Level - 1);
                 return NULL;
             }
@@ -82,35 +60,12 @@ GetPageTable(uint64_t* __Pml4__, uint64_t __VirtAddr__, int __Level__, int __Cre
     return CurrentTable;
 }
 
-/**
- * @brief Flush a single TLB entry.
- *
- * @details Invalidates the Translation Lookaside Buffer (TLB) entry
- * 			corresponding to the given virtual address. This ensures
- * 			that subsequent memory accesses use updated page table mappings.
- *
- * @param __VirtAddr__ Virtual address whose TLB entry should be flushed.
- *
- * @return void
- */
 void
 FlushTlb(uint64_t __VirtAddr__)
 {
-
     __asm__ volatile("invlpg (%0)" ::"r"(__VirtAddr__) : "memory");
 }
 
-/**
- * @brief Flush the entire TLB.
- *
- * @details Reloads the CR3 register to invalidate all cached TLB entries.
- * 			This forces the CPU to re-read page table mappings from memory.
- *
- * @return void
- *
- * @note This operation affects all virtual addresses and should
- *       be used with caution.
- */
 void
 FlushAllTlb(void)
 {

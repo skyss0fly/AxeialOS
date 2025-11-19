@@ -2,18 +2,6 @@
 #include <KrnPrintf.h>
 #include <String.h>
 
-/**
- * @brief Resolve a symbol name against the kernel export table
- *
- * @details Searches the kernel's exported symbol table for a symbol with the given name.
- * 			This enables dynamic resolution of kernel functions and variables by name.
- *
- * @param __Name__ Symbol name string to look up
- * @return Address of the symbol if found, NULL if not found or input invalid
- *
- * @note The export table is defined by linker sections __start_kexports
- *       and __stop_kexports, populated at build time.
- */
 void*
 KexpLookup(const char* __Name__)
 {
@@ -42,14 +30,6 @@ KexpLookup(const char* __Name__)
     return 0;
 }
 
-/**
- * @brief Print all exported symbols for diagnostics
- *
- * @details Iterates through the entire kernel export table and prints each symbol's
- * 			name and address. Useful for debugging and verifying symbol exports.
- *
- * @note Uses KrnPrintf for output, which goes to the kernel console/serial
- */
 void
 KexpDump(void)
 {

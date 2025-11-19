@@ -3,9 +3,6 @@
 #include <AllTypes.h>
 #include <KExports.h>
 
-/**
- * DefStructs
- */
 typedef struct Vnode         Vnode;
 typedef struct Dentry        Dentry;
 typedef struct Superblock    Superblock;
@@ -21,9 +18,6 @@ typedef struct VfsTimespec   VfsTimespec;
 typedef struct VfsMountFlags VfsMountFlags;
 typedef struct VfsNameBuf    VfsNameBuf;
 
-/**
- * Enums
- */
 /*Node Type*/
 typedef enum VnodeType
 {
@@ -123,9 +117,6 @@ typedef enum VfsNotifyMask
 
 } VfsNotifyMask;
 
-/**
- * Structs
- */
 typedef struct VfsTimespec
 {
     long Sec;
@@ -188,9 +179,6 @@ typedef struct VfsNameBuf
 
 } VfsNameBuf;
 
-/**
- * Operations
- */
 typedef struct VnodeOps
 {
     int (*Open)(Vnode*, File*);
@@ -274,9 +262,6 @@ struct File
     void*  Priv;
 }; /*Filentry*/
 
-/**
- * Functions
- */
 int VfsInit(void);
 int VfsShutdown(void);
 
@@ -399,9 +384,6 @@ long VfsGetFileCacheLimit(void);
 int  VfsSetIoBlockSize(long);
 long VfsGetIoBlockSize(void);
 
-/**
- * Public
- */
 KEXPORT(VfsInit);
 KEXPORT(VfsShutdown);
 KEXPORT(VfsRegisterFs);

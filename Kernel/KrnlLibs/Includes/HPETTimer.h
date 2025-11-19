@@ -1,8 +1,5 @@
 #pragma once
 
-/**
- * HPET Constants
- */
 #define TimerHpetBaseAddress         0xFED00000
 #define TimerHpetCapabilitiesReg     0x000
 #define TimerHpetConfigReg           0x010

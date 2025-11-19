@@ -1,17 +1,5 @@
 #include <PMM.h>
 
-/**
- * @brief Parse the system memory map provided by Limine.
- *
- * @details Iterates through all memory map entries returned by the bootloader,
- *			classifies them into usable, kernel, or reserved regions, and stores
- *			them in the PMM region list. Tracks the highest physical address to
- *			calculate the total number of pages in the system.
- *
- * @return void
- *
- * @note Must be called during PMM initialization before allocation.
- */
 void
 ParseMemoryMap(void)
 {
@@ -23,13 +11,13 @@ ParseMemoryMap(void)
 
     PInfo("Parsing memory map (%lu entries)...\n", MemmapRequest.response->entry_count);
 
-    Pmm.RegionCount = 0;
+    Pmm.RegionCount      = 0;
     uint64_t HighestAddr = 0;
 
     /*Process each memory map entry*/
     for (uint64_t Index = 0; Index < MemmapRequest.response->entry_count; Index++)
     {
-        struct limine_memmap_entry *Entry = MemmapRequest.response->entries[Index];
+        struct limine_memmap_entry* Entry = MemmapRequest.response->entries[Index];
 
         if (Pmm.RegionCount >= MaxMemoryRegions)
         {
@@ -38,7 +26,7 @@ ParseMemoryMap(void)
         }
 
         /*Store region information*/
-        Pmm.Regions[Pmm.RegionCount].Base = Entry->base;
+        Pmm.Regions[Pmm.RegionCount].Base   = Entry->base;
         Pmm.Regions[Pmm.RegionCount].Length = Entry->length;
 
         /*Classify region type based on Limine type*/
@@ -58,29 +46,25 @@ ParseMemoryMap(void)
         /*Track the highest address seen for total memory calculation*/
         uint64_t EndAddr = Entry->base + Entry->length;
         if (EndAddr > HighestAddr)
+        {
             HighestAddr = EndAddr;
+        }
 
         Pmm.RegionCount++;
 
         PDebug("Region %lu: 0x%016lx-0x%016lx Type=%u\n",
-        Index, Entry->base, EndAddr, Pmm.Regions[Pmm.RegionCount-1].Type);
+               Index,
+               Entry->base,
+               EndAddr,
+               Pmm.Regions[Pmm.RegionCount - 1].Type);
     }
 
     /*Calculate total pages in system (round up)*/
     Pmm.TotalPages = (HighestAddr + PageSize - 1) / PageSize;
-    PInfo("Total pages: %lu (%lu MB)\n", Pmm.TotalPages, (Pmm.TotalPages * PageSize) / (1024 * 1024));
+    PInfo(
+        "Total pages: %lu (%lu MB)\n", Pmm.TotalPages, (Pmm.TotalPages * PageSize) / (1024 * 1024));
 }
 
-/**
- * @brief Mark memory regions in the PMM bitmap.
- *
- * @details Initially marks all pages as used (safe default).
- * 			Clears bitmap bits for usable regions to make them available.
- * 			Protects the PMM bitmap itself from allocation.
- * 			Updates statistics on available pages.
- *
- * @return void
- */
 void
 MarkMemoryRegions(void)
 {
@@ -88,7 +72,9 @@ MarkMemoryRegions(void)
 
     /*Start with all pages marked as used (safe default)*/
     for (uint64_t Index = 0; Index < Pmm.TotalPages; Index++)
+    {
         SetBitmapBit(Index);
+    }
 
     /*Mark usable regions as available for allocation*/
     uint64_t TotalFreePages = 0;
@@ -103,7 +89,9 @@ MarkMemoryRegions(void)
             for (uint64_t Page = StartPage; Page < StartPage + PageCount; Page++)
             {
                 if (Page < Pmm.TotalPages)
+                {
                     ClearBitmapBit(Page);
+                }
             }
 
             TotalFreePages += PageCount;
@@ -112,12 +100,14 @@ MarkMemoryRegions(void)
     }
 
     /*Protect the bitmap itself from allocation*/
-    uint64_t BitmapPhys = VirtToPhys(Pmm.Bitmap);
+    uint64_t BitmapPhys      = VirtToPhys(Pmm.Bitmap);
     uint64_t BitmapStartPage = BitmapPhys / PageSize;
     uint64_t BitmapPageCount = (Pmm.BitmapSize * sizeof(uint64_t) + PageSize - 1) / PageSize;
 
     for (uint64_t Page = BitmapStartPage; Page < BitmapStartPage + BitmapPageCount; Page++)
+    {
         SetBitmapBit(Page);
+    }
 
     PInfo("Protected %lu bitmap pages from allocation\n", BitmapPageCount);
     PSuccess("Memory regions marked: %lu pages available\n", TotalFreePages - BitmapPageCount);

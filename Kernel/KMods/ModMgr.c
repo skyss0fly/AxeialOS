@@ -9,13 +9,6 @@
 /*Globals*/
 ModuleRecord* ModuleListHead = 0;
 
-/**
- * @brief Initialize the module registry
- *
- * Sets up the global registry list head. Safe to call multiple times.
- *
- * @return 0 on success
- */
 int
 ModuleRegistryInit(void)
 {
@@ -23,14 +16,6 @@ ModuleRegistryInit(void)
     return 0;
 }
 
-/**
- * @brief Add a module record to the registry
- *
- * Inserts the given record at the head of the global registry list.
- *
- * @param __Rec__ Module record to add
- * @return 0 on success, -1 on failure
- */
 int
 ModuleRegistryAdd(ModuleRecord* __Rec__)
 {
@@ -45,14 +30,6 @@ ModuleRegistryAdd(ModuleRecord* __Rec__)
     return 0;
 }
 
-/**
- * @brief Find a module record by name
- *
- * Linear search through the registry for the given module name.
- *
- * @param __Name__ Module name/path string
- * @return Pointer to ModuleRecord on success, NULL if not found
- */
 ModuleRecord*
 ModuleRegistryFind(const char* __Name__)
 {
@@ -74,14 +51,6 @@ ModuleRegistryFind(const char* __Name__)
     return 0;
 }
 
-/**
- * @brief Remove a module record from the registry
- *
- * Unlinks the given record from the global list. Does not free the record.
- *
- * @param __Rec__ Module record to remove
- * @return 0 on success, -1 if not found
- */
 int
 ModuleRegistryRemove(ModuleRecord* __Rec__)
 {

@@ -1,17 +1,6 @@
 #include <SMP.h>  /* Symmetric multiprocessing functions */
 #include <Sync.h> /* Synchronization primitives definitions */
 
-/**
- * @brief Initialize a mutex.
- *
- * @details Sets the lock to unlocked, clears the owner, resets recursion count,
- * 			and assigns a name for debugging.
- *
- * @param __Mutex__ Pointer to the Mutex structure.
- * @param __Name__ Human-readable name for debugging.
- *
- * @return void
- */
 void
 InitializeMutex(Mutex* __Mutex__, const char* __Name__)
 {
@@ -21,16 +10,6 @@ InitializeMutex(Mutex* __Mutex__, const char* __Name__)
     __Mutex__->Name           = __Name__;   /* Assign name for debugging */
 }
 
-/**
- * @brief Acquire a mutex.
- *
- * @details Spins until the lock becomes available. Supports recursive locking
- * 			if the same CPU already owns the mutex.
- *
- * @param __Mutex__ Pointer to the Mutex structure.
- *
- * @return void
- */
 void
 AcquireMutex(Mutex* __Mutex__)
 {
@@ -59,16 +38,6 @@ AcquireMutex(Mutex* __Mutex__)
     }
 }
 
-/**
- * @brief Release a mutex.
- *
- * @details Decrements recursion count. If it reaches zero, clears the owner
- * 			and unlocks the mutex.
- *
- * @param __Mutex__ Pointer to the Mutex structure.
- *
- * @return void
- */
 void
 ReleaseMutex(Mutex* __Mutex__)
 {
@@ -88,16 +57,6 @@ ReleaseMutex(Mutex* __Mutex__)
     }
 }
 
-/**
- * @brief Attempt to acquire a mutex without blocking.
- *
- * @details Acquires the lock if free, or increments recursion count if already owned
- * 			by the current CPU.
- *
- * @param __Mutex__ Pointer to the Mutex structure.
- *
- * @return true if acquired successfully, false otherwise.
- */
 bool
 TryAcquireMutex(Mutex* __Mutex__)
 {

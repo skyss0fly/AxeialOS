@@ -1,31 +1,6 @@
 #include <KHeap.h>
 #include <RamFs.h>
 
-/**
- * @brief Read bytes from a file node
- *
- * Reads data from a RamFS file node into a user buffer, starting at the
- * specified offset. Handles bounds checking and partial reads. This function
- * is similar to standard POSIX read() but operates on RamFS-specific node
- * structures rather than file descriptors.
- *
- * The implementation performs bounds checking to prevent buffer overflows
- * and ensures that reads don't exceed the file size. For partial reads at
- * EOF, it returns the available bytes rather than an error.
- *
- * @param __Node__ File node to read from (must be RamFSNode_File type)
- * @param __Offset__ Byte offset within the file to start reading (0-based)
- * @param __Buffer__ Destination buffer for read data (must be valid)
- * @param __Length__ Maximum number of bytes to read
- * @return Number of bytes actually read (0 on error, EOF, or invalid node)
- *
- * @note Only works on file nodes; directories return 0
- * @note Similar to Kernel/PMM/PMM.c's bounds checking in memory operations
- * @note No alignment requirements for buffer or offset
- *
- * @see RamFSNode structure in RamFs.h for node format
- * @see RamFSLookup() for path-to-node resolution
- */
 size_t
 RamFSRead(RamFSNode* __Node__, size_t __Offset__, void* __Buffer__, size_t __Length__)
 {
@@ -68,23 +43,6 @@ RamFSRead(RamFSNode* __Node__, size_t __Offset__, void* __Buffer__, size_t __Len
     return __Length__;
 }
 
-/**
- * @brief Check if a path exists in the mounted RamFS image
- *
- * Performs a path lookup to determine if a given absolute path exists within
- * the currently mounted RamFS filesystem. This is a lightweight existence
- * check that doesn't retrieve file metadata.
- *
- * @param __Path__ Absolute path string to check (must start with '/')
- * @return 1 if the path exists and is accessible, 0 otherwise
- *
- * @note Requires RamFS.Root to be initialized (filesystem mounted)
- * @note Similar to POSIX access() but only checks existence, not permissions
- * @note Used internally by RamFSIsDir() and RamFSIsFile() for validation
- *
- * @see RamFSLookup() for the underlying path resolution mechanism
- * @see RamFSIsDir() and RamFSIsFile() for type-specific existence checks
- */
 int
 RamFSExists(const char* __Path__)
 {

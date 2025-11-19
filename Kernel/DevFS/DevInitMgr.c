@@ -7,11 +7,6 @@
 
 #define MaxDevModules 128
 
-/**
- * @brief Initialize all device drivers by scanning (RamFS) root for .ko modules.
- *        Each .ko file is passed to InstallModule() for loading in numeric order.
- *        Warns if a module lacks a numeric prefix, and also warns if sequence gaps exist.
- */
 void
 InitRamDiskDevDrvs(void)
 {

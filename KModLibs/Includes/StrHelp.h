@@ -2,8 +2,6 @@
 
 #include <EveryType.h>
 
-/** @internal Internal String and Libc Functions for the modules. */
-
 /*Strcpy*/
 static inline void
 strcpy(char* __Dest__, const char* __Src__, uint32_t __MaxLen__)

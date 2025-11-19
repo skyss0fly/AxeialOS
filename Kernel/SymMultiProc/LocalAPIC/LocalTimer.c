@@ -2,33 +2,9 @@
 #include <Timer.h>     /* Global timer management structures */
 #include <VMM.h>       /* Virtual memory mapping functions */
 
-/**
- * @brief Configure the Local APIC timer for the current CPU.
- *
- * @details This function is called by Application Processors (APs) to configure their
- * 			Local APIC timer using the frequency and base address initialized by the BSP.
- * 			It performs the following steps:
- * 			Verifies that the BSP has initialized the timer system.
- * 			Reads and maps the AP’s APIC base from the IA32_APIC_BASE MSR.
- * 			Validates register addresses and current values for debugging.
- * 			Stops any existing timer by setting the initial count to zero.
- * 			Masks the LVT timer and clears the Task Priority Register (TPR).
- * 			Sends an End Of Interrupt (EOI) to acknowledge pending interrupts.
- * 			Enables the APIC via the spurious interrupt register.
- * 			Sets the timer divider and calculates the initial count.
- * 			Configures the LVT timer for periodic mode and starts the timer.
- *
- * @return void
- *
- * @note This function must be called during AP startup after the BSP
- *       has completed global timer initialization.
- *
- * @see InitializeApicTimer, ApEntryPoint
- */
 void
 SetupApicTimerForThisCpu(void)
 {
-
     if (Timer.ApicBase == 0 || Timer.TimerFrequency == 0)
     {
         PWarn("AP: Timer not initialized by BSP\n");

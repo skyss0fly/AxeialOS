@@ -4,14 +4,8 @@
 #include <KrnPrintf.h>
 #include <LimineServices.h>
 
-/**
- * Maximum CPUs Supported
- */
 #define MaxCPUs 256
 
-/**
- * CPU Status
- */
 typedef enum
 {
 
@@ -22,12 +16,8 @@ typedef enum
 
 } CpuStatus;
 
-/**
- * CPU Information
- */
 typedef struct
 {
-
     uint32_t                ApicId;
     uint32_t                CpuNumber;
     CpuStatus               Status;
@@ -36,12 +26,8 @@ typedef struct
 
 } CpuInfo;
 
-/**
- * SMP Manager
- */
 typedef struct
 {
-
     uint32_t CpuCount;
     uint32_t OnlineCpus;
     uint32_t BspApicId;
@@ -49,15 +35,9 @@ typedef struct
 
 } SmpManager;
 
-/**
- * Globals
- */
 extern SmpManager        Smp;
 extern volatile uint32_t CpuStartupCount;
 
-/**
- * Functions
- */
 void     InitializeSmp(void);
 void     ApEntryPoint(struct limine_smp_info* __CpuInfo__);
 uint32_t GetCurrentCpuId(void);

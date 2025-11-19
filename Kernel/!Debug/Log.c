@@ -1,18 +1,6 @@
+
 #include <KrnPrintf.h>
 
-/**
- * @brief Print an error message to the console.
- *
- * @details Acquires the console spinlock for thread-safe output.
- *			Temporarily sets foreground/background colors to error style.
- *			Prints the "[ERROR]:" prefix followed by the formatted message.
- *			Restores previous colors and releases the spinlock.
- *
- * @param __Format__ Format string with optional specifiers.
- * @param ...        Variable arguments matching the format string.
- *
- * @return void
- */
 void
 PError(const char* __Format__, ...)
 {
@@ -50,18 +38,6 @@ PError(const char* __Format__, ...)
     ReleaseSpinLock(&ConsoleLock);
 }
 
-/**
- * @brief Print a warning message to the console.
- *
- * @details Uses warning color scheme.
- * 			Prints the "[WARN]:" prefix followed by the formatted message.
- * 			Thread-safe via console spinlock.
- *
- * @param __Format__ Format string with optional specifiers.
- * @param ...        Variable arguments matching the format string.
- *
- * @return void
- */
 void
 PWarn(const char* __Format__, ...)
 {
@@ -99,18 +75,6 @@ PWarn(const char* __Format__, ...)
     ReleaseSpinLock(&ConsoleLock);
 }
 
-/**
- * @brief Print an informational message to the console.
- *
- * @details Uses informational color scheme.
- *			Prints the "[INFO]:" prefix followed by the formatted message.
- *			Thread-safe via console spinlock.
- *
- * @param __Format__ Format string with optional specifiers.
- * @param ...        Variable arguments matching the format string.
- *
- * @return void
- */
 void
 PInfo(const char* __Format__, ...)
 {
@@ -148,20 +112,6 @@ PInfo(const char* __Format__, ...)
     ReleaseSpinLock(&ConsoleLock);
 }
 
-/**
- * @brief Print a debug message to the console.
- *
- * @details Uses debug color scheme.
- * 			Prints the "[DEBUG]:" prefix followed by the formatted message.
- * 			Intended for development and diagnostic output.
- *
- * @param __Format__ Format string with optional specifiers.
- * @param ...        Variable arguments matching the format string.
- *
- * @return void
- *
- * @note This function is named `_PDebug` to avoid conflicts with macros.
- */
 void
 _PDebug(const char* __Format__, ...)
 {
@@ -198,18 +148,6 @@ _PDebug(const char* __Format__, ...)
     ReleaseSpinLock(&ConsoleLock);
 }
 
-/**
- * @brief Print a success message to the console.
- *
- * @details Uses success color scheme.
- * 			Prints the "[OK]:" prefix followed by the formatted message.
- * 			Thread-safe via console spinlock.
- *
- * @param __Format__ Format string with optional specifiers.
- * @param ...        Variable arguments matching the format string.
- *
- * @return void
- */
 void
 PSuccess(const char* __Format__, ...)
 {

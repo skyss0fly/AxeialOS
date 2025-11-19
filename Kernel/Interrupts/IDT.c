@@ -1,11 +1,9 @@
 #include <IDT.h>
 
-/** @brief Globals */
 IdtEntry IdtEntries[256];
 
 IdtPointer IdtPtr;
 
-/** @brief Exception Labels */
 const char* ExceptionNames[32] = {"Division Error",
                                   "Debug Exception",
                                   "Non-Maskable Interrupt",
@@ -27,20 +25,6 @@ const char* ExceptionNames[32] = {"Division Error",
                                   "Machine Check",
                                   "SIMD Floating-Point Exception"};
 
-/**
- * @brief Configure an entry in the Interrupt Descriptor Table (IDT).
- *
- * @details Sets up an IDT entry with the given handler address, code segment selector,
- *			and type/attributes. Splits the 64-bit handler address into low, mid, and high
- *			parts across the IDT entry fields.
- *
- * @param __Index__   Index of the IDT entry (0–255).
- * @param __Handler__ Address of the interrupt handler function.
- * @param __Selector__ Code segment selector for the handler.
- * @param __Flags__   Type and attribute flags (e.g., interrupt gate).
- *
- * @return void
- */
 void
 SetIdtEntry(int __Index__, uint64_t __Handler__, uint16_t __Selector__, uint8_t __Flags__)
 {
@@ -53,20 +37,6 @@ SetIdtEntry(int __Index__, uint64_t __Handler__, uint16_t __Selector__, uint8_t 
     IdtEntries[__Index__].Reserved   = 0;
 }
 
-/**
- * @brief Initialize the legacy Programmable Interrupt Controller (PIC).
- *
- * @details Programs the PIC with initialization control words (ICWs):
- * 			ICW1: Start initialization sequence.
- * 			ICW2: Remap IRQs to vectors 32–47.
- * 			ICW3: Configure master/slave cascade.
- * 			ICW4: Set 8086/88 mode.
- * 			Finally, masks all IRQs since APIC is used instead of PIC.
- *
- * @return void
- *
- * @note Provides compatibility for legacy hardware.
- */
 void
 InitializePic(void)
 {
@@ -101,20 +71,6 @@ InitializePic(void)
     PDebug("PIC initialized (all IRQs masked)\n");
 }
 
-/**
- * @brief Initialize the Interrupt Descriptor Table (IDT).
- *
- * @details Clears all IDT entries.
- *			Sets up ISR stubs for CPU exceptions (vectors 0–19).
- *			Maps IRQ handlers for hardware interrupts (vectors 32–47).
- *			Initializes the PIC for compatibility.
- *			Loads the IDT into the CPU with `lidt`.
- *			Enables interrupts globally with `sti`.
- *
- * @return void
- *
- * @note Must be called during kernel initialization before handling interrupts.
- */
 void
 InitializeIdt(void)
 {
@@ -239,16 +195,6 @@ InitializeIdt(void)
     PSuccess("IDT init... OK\n");
 }
 
-/**
- * @brief Dump memory contents in hex format.
- *
- * @details Prints a hex dump of the specified memory region, 16 bytes per line.
- *
- * @param __Address__ Starting address to dump.
- * @param __Bytes__   Number of bytes to display.
- *
- * @return void
- */
 void
 DumpMemory(uint64_t __Address__, int __Bytes__)
 {
@@ -265,15 +211,6 @@ DumpMemory(uint64_t __Address__, int __Bytes__)
     }
 }
 
-/**
- * @brief Dump instruction bytes at a given RIP.
- *
- * @details Prints the first 16 bytes of machine code at the given instruction pointer.
- *
- * @param __Rip__ Instruction pointer address.
- *
- * @return void
- */
 void
 DumpInstruction(uint64_t __Rip__)
 {
@@ -287,13 +224,6 @@ DumpInstruction(uint64_t __Rip__)
     KrnPrintf("\n");
 }
 
-/**
- * @brief Dump CPU control registers.
- *
- * @details Reads CR0, CR2, CR3, and CR4 using inline assembly and prints their values.
- *
- * @return void
- */
 void
 DumpControlRegisters(void)
 {
@@ -310,14 +240,6 @@ DumpControlRegisters(void)
     KrnPrintf("  CR3: 0x%016lx  CR4: 0x%016lx\n", CR3, CR4);
 }
 
-/**
- * @brief ISR stub for CPU exceptions.
- *
- * @details Pushes dummy error code and vector number onto the stack,
- *			then jumps to the common ISR handler stub.
- *
- * @param num Exception vector number.
- */
 #define ISR_STUB(num)                                                                              \
     void Isr##num(void)                                                                            \
     {                                                                                              \
@@ -326,14 +248,6 @@ DumpControlRegisters(void)
                          "jmp IsrCommonStub\n\t");                                                 \
     }
 
-/**
- * @brief ISR stub for exceptions with error codes.
- *
- * @details	Pushes the vector number (with error code already on stack),
- * 			then jumps to the common ISR handler stub.
- *
- * @param num Exception vector number.
- */
 #define ISR_STUB_ERR(num)                                                                          \
     void Isr##num(void)                                                                            \
     {                                                                                              \
@@ -341,15 +255,6 @@ DumpControlRegisters(void)
                          "jmp IsrCommonStub\n\t");                                                 \
     }
 
-/**
- * @brief IRQ stub for hardware interrupts.
- *
- * @details Pushes dummy error code and interrupt vector number,
- * 			then jumps to the common IRQ handler stub.
- *
- * @param num      IRQ number (0–15).
- * @param int_num  Interrupt vector number (32–47).
- */
 #define IRQ_STUB(num, int_num)                                                                     \
     void Irq##num(void)                                                                            \
     {                                                                                              \
@@ -363,9 +268,10 @@ ISR_STUB(0)
 ISR_STUB(1)
 ISR_STUB(2)
 ISR_STUB(3)
-ISR_STUB(4) ISR_STUB(5) ISR_STUB(6) ISR_STUB(7) ISR_STUB_ERR(8) ISR_STUB(9) ISR_STUB_ERR(10)
-    ISR_STUB_ERR(11) ISR_STUB_ERR(12) ISR_STUB_ERR(13) ISR_STUB_ERR(14) ISR_STUB(15) ISR_STUB(16)
-        ISR_STUB(17) ISR_STUB(18) ISR_STUB(19)
+ISR_STUB(4)
+ISR_STUB(5) ISR_STUB(6) ISR_STUB(7) ISR_STUB_ERR(8) ISR_STUB(9) ISR_STUB_ERR(10) ISR_STUB_ERR(11)
+    ISR_STUB_ERR(12) ISR_STUB_ERR(13) ISR_STUB_ERR(14) ISR_STUB(15) ISR_STUB(16) ISR_STUB(17)
+        ISR_STUB(18) ISR_STUB(19)
 
     /*Generate IRQ stubs for hardware interrupts 32-47*/
     IRQ_STUB(0, 32) IRQ_STUB(1, 33) IRQ_STUB(2, 34) IRQ_STUB(3, 35) IRQ_STUB(4, 36) IRQ_STUB(5, 37)

@@ -1,29 +1,9 @@
+
 #include <BootConsole.h>
 #include <Serial.h>
 
-/**
- * TODO: Probably Add Double buffering because Its slow.
- * 		 Even tho it is temp' but will be nice to have.
- */
-
-/** @brief Global (Early Boot)Console */
 BootConsole Console = {0};
 
-/**
- * @brief Initialize the boot console.
- *
- * @details Sets up the framebuffer console with dimensions, cursor position,
- * 			and default text/background colors. Calculates the number of
- * 			character columns and rows based on font size.
- *
- * @param __FrameBuffer__ Pointer to the framebuffer memory (32-bit pixels).
- * @param __CW__ Width of the framebuffer in pixels.
- * @param __CH__ Height of the framebuffer in pixels.
- *
- * @return void
- *
- * @note Must be called before any console output functions.
- */
 void
 KickStartConsole(uint32_t* __FrameBuffer__, uint32_t __CW__, uint32_t __CH__)
 {
@@ -38,14 +18,6 @@ KickStartConsole(uint32_t* __FrameBuffer__, uint32_t __CW__, uint32_t __CH__)
     Console.BGColor      = 0x000000; /* Black background */
 }
 
-/**
- * @brief Clear the console.
- *
- * @details Fills the entire framebuffer with the background color and resets
- * 			the cursor to the top-left position.
- *
- * @return void
- */
 void
 ClearConsole(void)
 {
@@ -60,14 +32,6 @@ ClearConsole(void)
     Console.CursorY = 0;
 }
 
-/**
- * @brief Scroll the console up by one line.
- *
- * @details Moves all framebuffer lines up by one character row, discarding the
- * 			top line. Clears the newly exposed bottom line with the background color.
- *
- * @return void
- */
 void
 ScrollConsole(void)
 {
@@ -105,19 +69,6 @@ ScrollConsole(void)
     }
 }
 
-/**
- * @brief Output a single character to the console.
- *
- * @details Mirrors the character to the serial port for debugging.
- * 			Handles newline (`\n`) and carriage return (`\r`).
- * 			Renders printable characters to the framebuffer.
- * 			Advances the cursor, wrapping at the right edge.
- * 			Scrolls the console when reaching the bottom.
- *
- * @param __Char__ Character to output.
- *
- * @return void
- */
 void
 PutChar(char __Char__)
 {
@@ -158,15 +109,6 @@ PutChar(char __Char__)
     }
 }
 
-/**
- * @brief Output a null-terminated string to the console.
- *
- * @details Iterates through the string and calls PutChar for each character.
- *
- * @param __String__ Pointer to the string to output.
- *
- * @return void
- */
 void
 PutPrint(const char* __String__)
 {
@@ -178,17 +120,6 @@ PutPrint(const char* __String__)
     }
 }
 
-/**
- * @brief Set console foreground and background colors.
- *
- * @details Updates the text (foreground) and background color values used
- * 			for subsequent rendering.
- *
- * @param __FG__ Foreground (text) color in 32-bit ARGB.
- * @param __BG__ Background color in 32-bit ARGB.
- *
- * @return void
- */
 void
 SetBGColor(uint32_t __FG__, uint32_t __BG__)
 {
@@ -196,17 +127,6 @@ SetBGColor(uint32_t __FG__, uint32_t __BG__)
     Console.BGColor = __BG__;
 }
 
-/**
- * @brief Set the console cursor position.
- *
- * @details Updates the cursor coordinates with bounds checking to ensure
- * 			they remain within the console’s dimensions.
- *
- * @param __CurX__ New cursor X position (column).
- * @param __CurY__ New cursor Y position (row).
- *
- * @return void
- */
 void
 SetCursor(uint32_t __CurX__, uint32_t __CurY__)
 {

@@ -2,14 +2,9 @@
 
 #include <AllTypes.h>
 
-/**
- * Structures
- */
-
 /*Section Header*/
 typedef struct
 {
-
     uint32_t sh_name;
     uint32_t sh_type;
     uint64_t sh_flags;
@@ -26,7 +21,6 @@ typedef struct
 /*ELF Header*/
 typedef struct
 {
-
     unsigned char e_ident[16]; /* ELF identification bytes */
     uint16_t      e_type;      /* Object file type */
     uint16_t      e_machine;   /* Target architecture */
@@ -66,7 +60,6 @@ typedef struct __ElfSectionSet__
 /*Symbols*/
 typedef struct
 {
-
     uint32_t      st_name; /* Index into .strtab */
     unsigned char st_info; /* Symbol type and binding */
     unsigned char st_other;
@@ -79,7 +72,6 @@ typedef struct
 /*Rellocate*/
 typedef struct __ElfSymbol__
 {
-
     const char*   Name;
     uint64_t      Value;
     uint64_t      ResolvedAddr;
@@ -91,7 +83,6 @@ typedef struct __ElfSymbol__
 /* ELF64 relocation with addend */
 typedef struct
 {
-
     uint64_t r_offset; /* Location to apply relocation */
     uint64_t r_info;   /* Symbol index and type */
     int64_t  r_addend; /* Constant addend */
@@ -108,7 +99,6 @@ typedef struct
 /*Module*/
 typedef struct ModImage
 {
-
     uint8_t* Text;
     long     TextSz;
 
@@ -133,9 +123,6 @@ typedef struct ModImage
 #define ELF64_R_SYM(I)  ((I) >> 32)
 #define ELF64_R_TYPE(I) ((uint32_t)(I))
 
-/**
- * Functions
- */
 int  InstallModule(const char* __Path__);
 int  UnInstallModule(const char* __Path__);
 void InitRamDiskDevDrvs(void);

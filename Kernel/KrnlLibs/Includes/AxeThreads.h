@@ -5,9 +5,6 @@
 #include <Sync.h>
 #include <VMM.h>
 
-/**
- * Thread States
- */
 typedef enum
 {
 
@@ -20,11 +17,6 @@ typedef enum
 
 } ThreadState;
 
-/**
- * Thread Types
- * TODO: add more types such as Child and Parent
- * maybe handled by the TCB
- */
 typedef enum
 {
 
@@ -33,9 +25,6 @@ typedef enum
 
 } ThreadType;
 
-/**
- * Thread Priority
- */
 typedef enum
 {
 
@@ -49,9 +38,6 @@ typedef enum
 
 } ThreadPriority;
 
-/**
- * CPU Context
- */
 typedef struct
 {
     /*GPR*/
@@ -70,9 +56,6 @@ typedef struct
 
 } ThreadContext;
 
-/**
- * TCB
- */
 typedef struct Thread
 {
     /*Core ID*/
@@ -137,9 +120,6 @@ typedef struct Thread
 
 } Thread;
 
-/**
- * TCB Flags
- */
 #define ThreadFlagSystem    (1 << 0)
 #define ThreadFlagRealtime  (1 << 1)
 #define ThreadFlagPinned    (1 << 2)
@@ -147,9 +127,6 @@ typedef struct Thread
 #define ThreadFlagSuspended (1 << 4)
 #define ThreadFlagCritical  (1 << 5)
 
-/**
- * Wait Reasons
- */
 #define WaitReasonNone      0
 #define WaitReasonMutex     1
 #define WaitReasonSemaphore 2
@@ -158,23 +135,14 @@ typedef struct Thread
 #define WaitReasonSignal    5
 #define WaitReasonChild     6
 
-/**
- * Constants
- */
 #define UserVirtualBase 0x0000000000400000ULL
 #define KStackSize      8192
 
-/**
- * Globals
- */
 extern uint32_t NextThreadId;
 extern Thread*  ThreadList;
 extern SpinLock ThreadListLock;
 extern Thread*  CurrentThreads[MaxCPUs];
 
-/**
- * Functions
- */
 /*Thread Manager Core*/
 void    InitializeThreadManager(void);
 Thread* GetCurrentThread(uint32_t __CpuId__);
@@ -219,9 +187,6 @@ void WakeSleepingThreads(void);             //
 void DumpThreadInfo(Thread* __ThreadPtr__); //
 void DumpAllThreads(void);                  //
 
-/**
- * Public
- */
 KEXPORT(GetCurrentThread);
 KEXPORT(CreateThread);
 KEXPORT(DestroyThread);

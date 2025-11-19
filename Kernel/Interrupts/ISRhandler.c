@@ -4,30 +4,6 @@
 #include <SMP.h>
 #include <SymAP.h>
 
-/**
- * @brief Handle CPU exceptions (ISRs).
- *
- * @details Provides diagnostic output and halts the system on fatal exceptions.
- * 			Steps performed:
- * 			Disables interrupts to prevent re-entrancy.
- * 			Prints exception name, vector number, error code, and CPU ID.
- * 			Dumps CPU register state, segment registers, and RFLAGS.
- * 			Displays control registers (CR0–CR4).
- * 			Shows instruction bytes at the faulting RIP.
- * 			Dumps stack contents and generates a stack trace.
- * 			Provides detailed analysis for General Protection Faults and Page Faults.
- * 			Prints descriptor table information for SMP debugging.
- * 			Halts the CPU indefinitely after diagnostics.
- *
- * @param __Frame__ Pointer to the interrupt frame containing CPU state.
- *
- * @return void
- *
- * @note This handler is intended for development/debugging. In production,
- *       exception handling should recover or terminate gracefully.
- *
- * @todo Probably handle ring 3 faults for recovery and Reboot for crtical ones.
- */
 void
 IsrHandler(InterruptFrame* __Frame__)
 {
@@ -162,53 +138,53 @@ IsrHandler(InterruptFrame* __Frame__)
             break;
 
         case 14: /*Page Fault - Memory access violation*/
-        {
-            uint64_t cr2;
-            __asm__ volatile("movq %%cr2, %0" : "=r"(cr2)); /* CR2 contains faulting address */
-            KrnPrintf("\nPAGE FAULT DETAILS:\n");
-            KrnPrintf("  Faulting Address: 0x%016lx\n", cr2);
-            KrnPrintf("  Caused by: ");
+            {
+                uint64_t cr2;
+                __asm__ volatile("movq %%cr2, %0" : "=r"(cr2)); /* CR2 contains faulting address */
+                KrnPrintf("\nPAGE FAULT DETAILS:\n");
+                KrnPrintf("  Faulting Address: 0x%016lx\n", cr2);
+                KrnPrintf("  Caused by: ");
 
-            if (__Frame__->ErrCode & 1)
-            {
-                KrnPrintf("Protection violation ");
-            }
-            else
-            {
-                KrnPrintf("Page not present ");
-            }
+                if (__Frame__->ErrCode & 1)
+                {
+                    KrnPrintf("Protection violation ");
+                }
+                else
+                {
+                    KrnPrintf("Page not present ");
+                }
 
-            if (__Frame__->ErrCode & 2)
-            {
-                KrnPrintf("Write ");
-            }
-            else
-            {
-                KrnPrintf("Read ");
-            }
+                if (__Frame__->ErrCode & 2)
+                {
+                    KrnPrintf("Write ");
+                }
+                else
+                {
+                    KrnPrintf("Read ");
+                }
 
-            if (__Frame__->ErrCode & 4)
-            {
-                KrnPrintf("User mode ");
-            }
-            else
-            {
-                KrnPrintf("Kernel mode ");
-            }
+                if (__Frame__->ErrCode & 4)
+                {
+                    KrnPrintf("User mode ");
+                }
+                else
+                {
+                    KrnPrintf("Kernel mode ");
+                }
 
-            if (__Frame__->ErrCode & 8)
-            {
-                KrnPrintf("Reserved bit violation ");
-            }
+                if (__Frame__->ErrCode & 8)
+                {
+                    KrnPrintf("Reserved bit violation ");
+                }
 
-            if (__Frame__->ErrCode & 16)
-            {
-                KrnPrintf("Instruction fetch ");
-            }
+                if (__Frame__->ErrCode & 16)
+                {
+                    KrnPrintf("Instruction fetch ");
+                }
 
-            KrnPrintf("\n");
-        }
-        break;
+                KrnPrintf("\n");
+            }
+            break;
     }
 
     /*Dump memory around the instruction pointer for context*/

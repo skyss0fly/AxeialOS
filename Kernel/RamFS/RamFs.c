@@ -1,31 +1,11 @@
 #include <KHeap.h>
 #include <RamFs.h>
 
-/**
- * @brief Global RamFS context
- * Maintains the root of the filesystem and magic number for validation
- */
 RamFSContext RamFS = {
     .Root  = 0,         /**< Root directory node */
     .Magic = RamFSMagic /**< Magic number for context validation */
 };
 
-/**
- * @brief Attach a path into the RamFS hierarchy, auto-creating intermediate directories
- *
- * Builds or finds each directory segment in the given absolute path, and creates
- * the leaf node as a file or directory. For files, data and size are assigned.
- *
- * @param __Root__ Root directory node of the filesystem
- * @param __FullPath__ Absolute path to create (e.g., "/etc/init")
- * @param __Type__ Node type: RamFSNode_File or RamFSNode_Directory
- * @param __Data__ Pointer to file data (files only, may be NULL for directories)
- * @param __Size__ Size of file data in bytes (files only)
- * @return Pointer to the leaf node, or NULL on failure
- *
- * @note This function modifies the filesystem hierarchy by creating missing directories
- * @note Memory allocation failures during path creation will result in partial paths
- */
 RamFSNode*
 RamFSAttachPath(RamFSNode*     __Root__,
                 const char*    __FullPath__,
@@ -174,30 +154,6 @@ RamFSAttachPath(RamFSNode*     __Root__,
     return Leaf;
 }
 
-/**
- * @brief Parse and mount a CPIO "newc" initramfs image into RamFS
- *
- * Sequentially walks the CPIO archive entries, validating headers and creating
- * the corresponding filesystem nodes. Each entry contains a 110-byte header
- * followed by the filename, padding, file data, and more padding.
- *
- * Processing steps for each entry:
- * 		Validate header magic ("070701")
- * 		Parse NameSize and FileSize from ASCII hex fields
- * 		Extract filename and align to 4-byte boundary
- * 		For files: extract data and align to 4-byte boundary
- * 		Create appropriate RamFS node (file/directory) and attach to hierarchy
- * 		Stop processing at "TRAILER!!!" terminator entry
- *
- * @param __Image__ Pointer to CPIO newc archive in memory
- * @param __Length__ Size of image in bytes
- * @return Root node of mounted filesystem, or NULL on failure
- *
- * @note Memory layout per entry: [110-byte header | name (NUL-included) | padding | data | padding]
- * @note All numeric fields in CPIO header are 8-character ASCII hex values
- * @todo Implement UnMount/UMount function for cleanup
- */
-
 RamFSNode*
 RamFSMount(const void* __Image__, size_t __Length__)
 {
@@ -212,7 +168,6 @@ RamFSMount(const void* __Image__, size_t __Length__)
 
     while (Off + 6 <= (uint32_t)__Length__)
     {
-
         /*Align to 4-byte boundary for header*/
         Off = CpioAlignUp(Off, CpioAlign);
         if (Off + 110 > (uint32_t)__Length__)
@@ -325,20 +280,6 @@ RamFSMount(const void* __Image__, size_t __Length__)
     return RamFS.Root;
 }
 
-/**
- * @brief Resolve a RamFS node by absolute path
- *
- * Traverses the RamFS directory hierarchy to find the node corresponding
- * to the given absolute path. Splits the path into components and walks
- * through the directory structure.
- *
- * @param __Root__ Root node of the mounted RamFS filesystem
- * @param __Path__ Absolute path to resolve (must start with '/')
- * @return Pointer to the node if found, otherwise NULL
- *
- * @note Path must be absolute (start with '/')
- * @note Returns NULL if path is invalid or node doesn't exist
- */
 RamFSNode*
 RamFSLookup(RamFSNode* __Root__, const char* __Path__)
 {

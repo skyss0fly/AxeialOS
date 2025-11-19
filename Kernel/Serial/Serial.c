@@ -1,19 +1,5 @@
 #include <Serial.h> /* Serial port constants and register definitions */
 
-/**
- * @brief Initialize the primary serial port (COM1).
- *
- * @details Configures the UART hardware for standard communication:
- * 			Disables interrupts.
- * 			Sets baud rate divisor (default 115200 / 3).
- * 			Configures line control (8 bits, no parity, one stop bit).
- * 			Enables FIFO with 14-byte threshold.
- * 			Sets modem control to enable RTS/DSR.
- *
- * @return void
- *
- * @note This must be called before using any serial output functions.
- */
 void
 InitializeSerial(void)
 {

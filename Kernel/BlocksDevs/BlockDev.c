@@ -1,18 +1,6 @@
+
 #include <BlockDev.h>
 
-/** @section Block Layer */
-
-/**
- * @brief Open a block disk via BlockDev shim.
- *
- * Resolves the BlockDisk descriptor from the context pointer, validates
- * it, and delegates to the driver-provided Open handler.
- *
- * @param __Ctx__ Device-private context pointer (BlockDisk*).
- * @return Result code from driver Open handler,
- *         -1 if descriptor invalid,
- *          0 if Open handler missing.
- */
 static int
 BlkDiskOpen(void* __Ctx__)
 {
@@ -33,17 +21,6 @@ BlkDiskOpen(void* __Ctx__)
     return D->Ops.Open(D->CtrlCtx);
 }
 
-/**
- * @brief Close a block disk via BlockDev shim.
- *
- * Resolves the BlockDisk descriptor from the context pointer, validates
- * it, and delegates to the driver-provided Close handler.
- *
- * @param __Ctx__ Device-private context pointer (BlockDisk*).
- * @return Result code from driver Close handler,
- *         -1 if descriptor invalid,
- *          0 if Close handler missing.
- */
 static int
 BlkDiskClose(void* __Ctx__)
 {
@@ -64,21 +41,6 @@ BlkDiskClose(void* __Ctx__)
     return D->Ops.Close(D->CtrlCtx);
 }
 
-/**
- * @brief Read blocks from a block disk.
- *
- * Validates the BlockDisk descriptor, buffer, and LBA range, then delegates
- * to the driver-provided ReadBlocks handler. Ensures reads do not exceed
- * the disk’s total block count.
- *
- * @param __Ctx__   Device-private context pointer (BlockDisk*).
- * @param __Lba__   Starting logical block address.
- * @param __Buf__   Destination buffer for read data.
- * @param __Count__ Number of blocks requested.
- *
- * @return Number of blocks read (>=0),
- *         0 if invalid arguments or handler missing.
- */
 static long
 BlkDiskReadBlocks(void* __Ctx__, uint64_t __Lba__, void* __Buf__, long __Count__)
 {
@@ -114,21 +76,6 @@ BlkDiskReadBlocks(void* __Ctx__, uint64_t __Lba__, void* __Buf__, long __Count__
     return (got < 0) ? 0 : got;
 }
 
-/**
- * @brief Write blocks to a block disk.
- *
- * Validates the BlockDisk descriptor, buffer, and LBA range, then delegates
- * to the driver-provided WriteBlocks handler. Ensures writes do not exceed
- * the disk’s total block count.
- *
- * @param __Ctx__   Device-private context pointer (BlockDisk*).
- * @param __Lba__   Starting logical block address.
- * @param __Buf__   Source buffer containing data to write.
- * @param __Count__ Number of blocks requested.
- *
- * @return Number of blocks written (>=0),
- *         0 if invalid arguments or handler missing.
- */
 static long
 BlkDiskWriteBlocks(void* __Ctx__, uint64_t __Lba__, const void* __Buf__, long __Count__)
 {
@@ -164,20 +111,6 @@ BlkDiskWriteBlocks(void* __Ctx__, uint64_t __Lba__, const void* __Buf__, long __
     return (put < 0) ? 0 : put;
 }
 
-/**
- * @brief Perform an ioctl on a block disk.
- *
- * Validates the BlockDisk descriptor and delegates to the driver-provided
- * Ioctl handler.
- *
- * @param __Ctx__ Device-private context pointer (BlockDisk*).
- * @param __Cmd__ Ioctl command code.
- * @param __Arg__ Optional argument pointer.
- *
- * @return Result code from driver Ioctl handler,
- *         -1 if descriptor invalid,
- *          0 if Ioctl handler missing.
- */
 static int
 BlkDiskIoctl(void* __Ctx__, unsigned long __Cmd__, void* __Arg__)
 {
@@ -199,14 +132,6 @@ BlkDiskIoctl(void* __Ctx__, unsigned long __Cmd__, void* __Arg__)
     return D->Ops.Ioctl(D->CtrlCtx, __Cmd__, __Arg__);
 }
 
-/**
- * @brief Open a block partition.
- *
- * Validates the BlockPart descriptor and its parent BlockDisk.
- *
- * @param __Ctx__ Device-private context pointer (BlockPart*).
- * @return 0 on success, -1 if descriptor or parent invalid.
- */
 static int
 BlkPartOpen(void* __Ctx__)
 {
@@ -223,14 +148,6 @@ BlkPartOpen(void* __Ctx__)
     return 0;
 }
 
-/**
- * @brief Close a block partition.
- *
- * Currently a no-op; validates context and returns success.
- *
- * @param __Ctx__ Device-private context pointer (BlockPart*).
- * @return Always 0.
- */
 static int
 BlkPartClose(void* __Ctx__)
 {
@@ -240,21 +157,6 @@ BlkPartClose(void* __Ctx__)
     return 0;
 }
 
-/**
- * @brief Read blocks from a block partition.
- *
- * Validates the BlockPart descriptor, buffer, and LBA range, then delegates
- * to the parent BlockDisk’s ReadBlocks handler. Ensures reads do not exceed
- * the partition’s block count.
- *
- * @param __Ctx__   Device-private context pointer (BlockPart*).
- * @param __Lba__   Starting logical block address relative to partition.
- * @param __Buf__   Destination buffer for read data.
- * @param __Count__ Number of blocks requested.
- *
- * @return Number of blocks read (>=0),
- *         0 if invalid arguments or handler missing.
- */
 static long
 BlkPartReadBlocks(void* __Ctx__, uint64_t __Lba__, void* __Buf__, long __Count__)
 {
@@ -296,21 +198,6 @@ BlkPartReadBlocks(void* __Ctx__, uint64_t __Lba__, void* __Buf__, long __Count__
     return (got < 0) ? 0 : got;
 }
 
-/**
- * @brief Write blocks to a block partition.
- *
- * Validates the BlockPart descriptor, buffer, and LBA range, then delegates
- * to the parent BlockDisk’s WriteBlocks handler. Ensures writes do not exceed
- * the partition’s block count.
- *
- * @param __Ctx__   Device-private context pointer (BlockPart*).
- * @param __Lba__   Starting logical block address relative to partition.
- * @param __Buf__   Source buffer containing data to write.
- * @param __Count__ Number of blocks requested.
- *
- * @return Number of blocks written (>=0),
- *         0 if invalid arguments or handler missing.
- */
 static long
 BlkPartWriteBlocks(void* __Ctx__, uint64_t __Lba__, const void* __Buf__, long __Count__)
 {
@@ -352,17 +239,6 @@ BlkPartWriteBlocks(void* __Ctx__, uint64_t __Lba__, const void* __Buf__, long __
     return (put < 0) ? 0 : put;
 }
 
-/**
- * @brief Perform an ioctl on a block partition.
- *
- * Currently a stub; validates the BlockPart descriptor.
- *
- * @param __Ctx__ Device-private context pointer (BlockPart*).
- * @param __Cmd__ Ioctl command code (unused).
- * @param __Arg__ Optional argument pointer (unused).
- *
- * @return 0 on success, -1 if descriptor invalid.
- */
 static int
 BlkPartIoctl(void* __Ctx__, unsigned long __Cmd__, void* __Arg__)
 {
@@ -377,21 +253,6 @@ BlkPartIoctl(void* __Ctx__, unsigned long __Cmd__, void* __Arg__)
     return 0;
 }
 
-/** @section Mains */
-
-/**
- * @brief Register a block disk with DevFS.
- *
- * Wraps a BlockDisk structure into a BlockDevOps table and registers
- * it with DevFS as a block device. This makes the disk accessible
- * under /dev/<name>.
- *
- * @param __Disk__ Pointer to the BlockDisk structure.
- * @return 0 on success, negative error code on failure.
- *
- * @note The BlockDisk descriptor must remain valid for the lifetime
- *       of the device node.
- */
 int
 BlockRegisterDisk(BlockDisk* __Disk__)
 {
@@ -433,19 +294,6 @@ BlockRegisterDisk(BlockDisk* __Disk__)
     return 0;
 }
 
-/**
- * @brief Register a block partition with DevFS.
- *
- * Wraps a BlockPart structure into a BlockDevOps table and registers
- * it with DevFS as a block device. This makes the partition accessible
- * under /dev/<name>.
- *
- * @param __Part__ Pointer to the BlockPart structure.
- * @return 0 on success, negative error code on failure.
- *
- * @note The BlockPart descriptor and its parent BlockDisk must remain
- *       valid for the lifetime of the device node.
- */
 int
 BlockRegisterPartition(BlockPart* __Part__)
 {

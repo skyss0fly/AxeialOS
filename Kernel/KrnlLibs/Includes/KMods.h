@@ -3,9 +3,6 @@
 #include <AllTypes.h>
 #include <ModELF.h>
 
-/**
- * Structs
- */
 typedef struct ModuleRecord
 {
     const char*    Name;
@@ -25,14 +22,8 @@ typedef struct ModuleRecord
 
 } ModuleRecord;
 
-/**
- * Globals
- */
 extern ModuleRecord* ModuleListHead;
 
-/**
- * Functions
- */
 int           ModuleRegistryInit(void);
 int           ModuleRegistryAdd(ModuleRecord* __Rec__);
 ModuleRecord* ModuleRegistryFind(const char* __Name__);

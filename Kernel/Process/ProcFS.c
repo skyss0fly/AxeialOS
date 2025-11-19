@@ -8,7 +8,6 @@
 #include <Sync.h>
 #include <VFS.h>
 
-/** @section Statics */
 static ProcFsContext __ProcFsCtx__  = {0};
 static SpinLock      __ProcFsLock__ = {0};
 
@@ -24,9 +23,6 @@ static int    ProcFsStat(Vnode* __Node__, VfsStat* __Stat__);
 static int    ProcFsOpen(Vnode* __Node__, File* __File__);
 static int    ProcFsClose(File* __File__);
 
-/**
- * @brief ProcFS ops table: required by VFS.
- */
 static const VnodeOps __ProcFsOps__ = {.Open     = ProcFsOpen,
                                        .Close    = ProcFsClose,
                                        .Read     = ProcFsFileRead,
@@ -51,9 +47,6 @@ static const VnodeOps __ProcFsOps__ = {.Open     = ProcFsOpen,
                                        .Map      = 0,
                                        .Unmap    = 0};
 
-/**
- * @brief Allocate a vnode bound to ProcFS, with ProcFsNode payload.
- */
 Vnode*
 ProcFsAllocNode(
     Superblock* __Sb__, VnodeType __Type__, ProcFsEntryType __Entry__, long __Pid__, long __Fd__)
@@ -85,9 +78,6 @@ ProcFsAllocNode(
     return Node;
 }
 
-/**
- * @brief Free a vnode and its ProcFsNode payload.
- */
 void
 ProcFsFreeNode(Vnode* __Node__)
 {
@@ -102,9 +92,6 @@ ProcFsFreeNode(Vnode* __Node__)
     KFree(__Node__);
 }
 
-/**
- * @brief Ensure capacity for directory children.
- */
 static int
 __procfs_dir_reserve__(ProcFsDirPriv* Dir, long Need)
 {
@@ -150,9 +137,6 @@ __procfs_dir_reserve__(ProcFsDirPriv* Dir, long Need)
     return 0;
 }
 
-/**
- * @brief Find child index by name within a directory.
- */
 static long
 __procfs_dir_find__(ProcFsDirPriv* Dir, const char* Name)
 {
@@ -176,9 +160,6 @@ __procfs_dir_find__(ProcFsDirPriv* Dir, const char* Name)
     return -1;
 }
 
-/**
- * @brief Create a directory vnode with private context.
- */
 Vnode*
 __procfs_alloc_dir__(Superblock* Sb, long Pid, long IsFdDir)
 {
@@ -210,9 +191,6 @@ __procfs_alloc_dir__(Superblock* Sb, long Pid, long IsFdDir)
     return Node;
 }
 
-/**
- * @brief Create a file vnode with private context.
- */
 static Vnode*
 __procfs_alloc_file__(Superblock* Sb, long Pid, long Fd, ProcFsEntryType Entry)
 {
@@ -244,9 +222,6 @@ __procfs_alloc_file__(Superblock* Sb, long Pid, long Fd, ProcFsEntryType Entry)
     return Node;
 }
 
-/**
- * @brief Attach a child into a directory's private children array.
- */
 static int
 __procfs_dir_attach__(ProcFsDirPriv* Dir, const char* Name, Vnode* Child, ProcFsEntryKind Kind)
 {
@@ -282,9 +257,6 @@ __procfs_dir_attach__(ProcFsDirPriv* Dir, const char* Name, Vnode* Child, ProcFs
     return 0;
 }
 
-/**
- * @brief Detach and free a child by index.
- */
 static int
 __procfs_dir_detach_idx__(ProcFsDirPriv* Dir, long idx)
 {
@@ -342,11 +314,6 @@ __procfs_dir_detach_idx__(ProcFsDirPriv* Dir, long idx)
     return 0;
 }
 
-/** @section Operations */
-
-/**
- * @brief Create /proc/<pid> directory in-memory.
- */
 static int
 ProcFsMkdir(Vnode* __Parent__, const char* __Name__, VfsPerm __Perm__)
 {
@@ -437,9 +404,6 @@ ProcFsMkdir(Vnode* __Parent__, const char* __Name__, VfsPerm __Perm__)
     return 0;
 }
 
-/**
- * @brief Remove /proc/<pid> directory in-memory.
- */
 static int
 ProcFsRmdir(Vnode* __Parent__, const char* __Name__)
 {
@@ -472,9 +436,6 @@ ProcFsRmdir(Vnode* __Parent__, const char* __Name__)
     return rc;
 }
 
-/**
- * @brief Create file under /proc/<pid> or /proc/<pid>/fd (generate fd/<N>).
- */
 static int
 ProcFsCreate(Vnode* __Parent__, const char* __Name__, long __Flags__, VfsPerm __Perm__)
 {
@@ -579,9 +540,6 @@ ProcFsCreate(Vnode* __Parent__, const char* __Name__, long __Flags__, VfsPerm __
     }
 }
 
-/**
- * @brief Unlink file under /proc/<pid> or /proc/<pid>/fd.
- */
 static int
 ProcFsUnlink(Vnode* __Parent__, const char* __Name__)
 {
@@ -613,9 +571,6 @@ ProcFsUnlink(Vnode* __Parent__, const char* __Name__)
     return rc;
 }
 
-/**
- * @brief Lookup child by name (returns child vnode).
- */
 static Vnode*
 ProcFsLookup(Vnode* __Parent__, const char* __Name__)
 {
@@ -648,9 +603,6 @@ ProcFsLookup(Vnode* __Parent__, const char* __Name__)
     return Child;
 }
 
-/**
- * @brief Readdir: serialize names line-by-line into buffer.
- */
 static long
 ProcFsReaddir(Vnode* __Dir__, void* __Buf__, long __Len__)
 {
@@ -716,9 +668,6 @@ ProcFsReaddir(Vnode* __Dir__, void* __Buf__, long __Len__)
     return Wrote * (long)sizeof(VfsDirEnt);
 }
 
-/**
- * @brief Read: generate content for stat/status/fd entries.
- */
 static long
 ProcFsFileRead(File* __File__, void* __Buf__, long __Len__)
 {
@@ -810,19 +759,6 @@ ProcFsFileRead(File* __File__, void* __Buf__, long __Len__)
     return -1;
 }
 
-/**
- * @brief Open a vnode in ProcFS.
- *
- * Initializes the VFS File handle for directories and files under /proc.
- * For directories, the File is set up without a private payload.
- * For files (stat/status/fd items), the File is bound to the vnode; content
- * generation happens in ProcFsFileRead(), so we do not allocate extra File->Priv here.
- *
- * @param __Node__ Vnode to open (directory or file)
- * @param __File__ File structure to initialize
- *
- * @return 0 on success, -1 on failure.
- */
 static int
 ProcFsOpen(Vnode* __Node__, File* __File__)
 {
@@ -867,17 +803,6 @@ ProcFsOpen(Vnode* __Node__, File* __File__)
     return -1;
 }
 
-/**
- * @brief Close a ProcFS file handle.
- *
- * Releases any per-file private context (none used currently) and
- * returns success. Content is synthesized on demand and does not
- * maintain per-open state.
- *
- * @param __File__ File structure to close.
- *
- * @return 0 on success, -1 on failure.
- */
 static int
 ProcFsClose(File* __File__)
 {
@@ -898,9 +823,6 @@ ProcFsClose(File* __File__)
     return 0;
 }
 
-/**
- * @brief Write: disabled (read-only).
- */
 static long
 ProcFsFileWrite(File* __File__, const void* __Buf__, long __Len__)
 {
@@ -911,9 +833,6 @@ ProcFsFileWrite(File* __File__, const void* __Buf__, long __Len__)
     return -1;
 }
 
-/**
- * @brief Stat: basic attributes for vnode.
- */
 static int
 ProcFsStat(Vnode* __Node__, VfsStat* __Stat__)
 {
@@ -929,17 +848,6 @@ ProcFsStat(Vnode* __Node__, VfsStat* __Stat__)
     return 0;
 }
 
-/** @section Helpers */
-
-/**
- * @brief Convert signed long to decimal string.
- *
- * @param __Value__  Value to convert.
- * @param __Buf__    Destination buffer.
- * @param __Cap__    Buffer capacity.
- *
- * @return Written length (excluding terminator) on success, -1 on failure.
- */
 static long
 IntToStr(long __Value__, char* __Buf__, long __Cap__)
 {
@@ -1000,15 +908,6 @@ IntToStr(long __Value__, char* __Buf__, long __Cap__)
     return Out;
 }
 
-/**
- * @brief Safe string append into a buffer.
- *
- * @param __Dst__ Destination buffer (NUL-terminated).
- * @param __Cap__ Capacity of destination buffer.
- * @param __Src__ Source string to append.
- *
- * @return 0 on success, -1 on overflow/failure.
- */
 static int
 StrAppend(char* __Dst__, long __Cap__, const char* __Src__)
 {
@@ -1039,17 +938,6 @@ StrAppend(char* __Dst__, long __Cap__, const char* __Src__)
     return 0;
 }
 
-/**
- * @brief Internal: bind ProcFsNode to a path's vnode.
- *
- * @param __Path__ Absolute path.
- * @param __Node__ ProcFsNode payload to bind (owned by VFS after bind).
- *
- * @return 0 on success, -1 on failure.
- *
- * @deprecated Not needed
- */
-
 /*
 static int
 ProcFsBindNode(const char *__Path__, ProcFsNode *__Node__)
@@ -1070,13 +958,6 @@ ProcFsBindNode(const char *__Path__, ProcFsNode *__Node__)
 }
 */
 
-/** @section Lifecycle */
-
-/**
- * @brief Initialize ProcFS and register filesystem type.
- *
- * @return 0 on success, -1 on failure.
- */
 int
 ProcFsInit(void)
 {
@@ -1120,14 +1001,6 @@ ProcFsInit(void)
     return 0;
 }
 
-/**
- * @brief Mount ProcFS and return its superblock.
- *
- * @param __Device__  Reserved (NULL/0).
- * @param __Options__ Reserved (NULL/0).
- *
- * @return Superblock* on success, NULL on failure.
- */
 Superblock*
 ProcFsMountImpl(void* __Device__, void* __Options__)
 {
@@ -1177,14 +1050,6 @@ ProcFsMountImpl(void* __Device__, void* __Options__)
     return Sb;
 }
 
-/**
- * @brief Register ProcFS at a given mount path.
- *
- * @param __MountPath__ Path (e.g., "/proc").
- * @param __Super__     Superblock.
- *
- * @return 0 on success, -1 on failure.
- */
 int
 ProcFsRegisterMount(const char* __MountPath__, Superblock* __Super__)
 {
@@ -1204,15 +1069,6 @@ ProcFsRegisterMount(const char* __MountPath__, Superblock* __Super__)
     return 0;
 }
 
-/** @section Exposure */
-
-/**
- * @brief Create /proc/<pid> subtree: stat, status, fd/.
- *
- * @param __Proc__ Process to expose.
- *
- * @return 0 on success, -1 on failure.
- */
 int
 ProcFsExposeProcess(Process* __Proc__)
 {
@@ -1296,13 +1152,6 @@ ProcFsExposeProcess(Process* __Proc__)
     return 0;
 }
 
-/**
- * @brief Remove /proc/<pid> subtree recursively.
- *
- * @param __Pid__ PID to detach from ProcFS.
- *
- * @return 0 on success, -1 on failure.
- */
 int
 ProcFsRemoveProcess(long __Pid__)
 {
@@ -1333,19 +1182,6 @@ ProcFsRemoveProcess(long __Pid__)
     return __procfs_dir_detach_idx__(RootPriv, idx);
 }
 
-/** @section Generators */
-
-/**
- * @brief Generate stat content for /proc/<pid>/stat.
- *
- * @param __Proc__ Process pointer.
- * @param __Buf__  Output buffer.
- * @param __Cap__  Buffer capacity.
- *
- * @details Semi POSIX
- *
- * @return Written bytes on success, -1 on failure.
- */
 long
 ProcFsMakeStat(Process* __Proc__, char* __Buf__, long __Cap__)
 {
@@ -1475,17 +1311,6 @@ ProcFsMakeStat(Process* __Proc__, char* __Buf__, long __Cap__)
     return Written;
 }
 
-/**
- * @brief Generate status content for /proc/<pid>/status.
- *
- * @param __Proc__ Process pointer.
- * @param __Buf__  Output buffer.
- * @param __Cap__  Buffer capacity.
- *
- * @details Semi POSIX
- *
- * @return Written bytes on success, -1 on failure.
- */
 long
 ProcFsMakeStatus(Process* __Proc__, char* __Buf__, long __Cap__)
 {
@@ -1622,15 +1447,6 @@ ProcFsMakeStatus(Process* __Proc__, char* __Buf__, long __Cap__)
     return Written;
 }
 
-/**
- * @brief Generate a listing for /proc/<pid>/fd directory.
- *
- * @param __Proc__ Process pointer.
- * @param __Buf__  Output buffer.
- * @param __Cap__  Buffer capacity.
- *
- * @return Written bytes on success, -1 on failure.
- */
 long
 ProcFsListFds(Process* __Proc__, char* __Buf__, long __Cap__)
 {
@@ -1672,18 +1488,6 @@ ProcFsListFds(Process* __Proc__, char* __Buf__, long __Cap__)
     return Wrote;
 }
 
-/** @section Resolver */
-
-/**
- * @brief Resolve a ProcFS path to its process and optional FD.
- *
- * @param __Path__      Absolute path inside /proc.
- * @param __OutPid__    Out PID (set when applicable).
- * @param __OutFd__     Out FD index (or -1).
- * @param __OutEntry__  Entry type.
- *
- * @return 0 on success, -1 on failure.
- */
 int
 ProcFsResolve(const char*      __Path__,
               long*            __OutPid__,
@@ -1799,17 +1603,6 @@ ProcFsResolve(const char*      __Path__,
     return -1;
 }
 
-/** @section VFS Bridges */
-
-/**
- * @brief VFS read bridge for ProcFS files (stat/status/fd items).
- *
- * @param __File__   VFS file handle (contains Node with Priv=ProcFsNode).
- * @param __Buffer__ Destination buffer.
- * @param __Length__ Requested bytes.
- *
- * @return Read bytes on success, -1 on failure.
- */
 long
 ProcFsRead(File* __File__, void* __Buffer__, long __Length__)
 {
@@ -1935,15 +1728,6 @@ ProcFsRead(File* __File__, void* __Buffer__, long __Length__)
     return -1;
 }
 
-/**
- * @brief VFS list/iterate bridge for ProcFS directories (/proc and /proc/<pid>/fd).
- *
- * @param __Node__    Directory vnode (Priv may be NULL for /proc).
- * @param __Buffer__  Destination buffer (serialized entries).
- * @param __Length__  Buffer capacity.
- *
- * @return Written bytes on success, -1 on failure.
- */
 long
 ProcFsList(Vnode* __Node__, void* __Buffer__, long __Length__)
 {

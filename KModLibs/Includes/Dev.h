@@ -2,11 +2,6 @@
 
 #include <EveryType.h>
 
-/**
- * Structures
- */
-
-/** Device type */
 typedef enum DevType
 {
     DevChar,
@@ -14,7 +9,6 @@ typedef enum DevType
 
 } DevType;
 
-/** Character device ops */
 typedef struct CharDevOps
 {
     int (*Open)(void* __DevCtx__);
@@ -25,7 +19,6 @@ typedef struct CharDevOps
 
 } CharDevOps;
 
-/** Block device ops */
 typedef struct BlockDevOps
 {
     int (*Open)(void* __DevCtx__);
@@ -37,7 +30,6 @@ typedef struct BlockDevOps
 
 } BlockDevOps;
 
-/** Registry entry for a device */
 typedef struct DeviceEntry
 {
     const char* Name;    /* "null", "zero", "tty0", "sda" */
@@ -54,7 +46,6 @@ typedef struct DeviceEntry
 
 } DeviceEntry;
 
-/** File-private context for DevFS handles */
 typedef struct DevFsFileCtx
 {
     const DeviceEntry* Dev;    /* bound device entry */
@@ -63,9 +54,6 @@ typedef struct DevFsFileCtx
 
 } DevFsFileCtx;
 
-/**
- * Functions
- */
 int DevFsRegisterCharDevice(const char* __Name__,
                             uint32_t    __Major__,
                             uint32_t    __Minor__,

@@ -5,31 +5,9 @@
 #include <Timer.h>      /* Timer management interfaces */
 #include <VMM.h>        /* Virtual Memory Management functions */
 
-/**
- * @brief Application Processor (AP) entry point.
- *
- * @details This function is executed by each Application Processor (AP) after startup.
- * 			It performs the following steps:
- *			Identifies the logical CPU number by matching LAPIC ID against the SMP manager.
- *			Marks the CPU as online and signals startup completion.
- *			Allocates and maps a dedicated stack for the AP.
- *			Initializes per-CPU interrupt handling and APIC timer configuration.
- *			Sets up the CPU scheduler for thread management.
- *			Enables interrupts and enters an idle loop (`hlt`) until scheduled work arrives.
- *
- * @param __CpuInfo__ Pointer to the Limine SMP information structure for this CPU.
- *
- * @return void
- *
- * @note This function never returns. Each AP remains in the idle loop
- *       until scheduled threads or interrupts are dispatched.
- *
- * @internal Called automatically by APs during SMP initialization.
- */
 void
 ApEntryPoint(struct limine_smp_info* __CpuInfo__)
 {
-
     uint32_t CpuNumber = 0;
     for (uint32_t Index = 0; Index < Smp.CpuCount; Index++)
     {

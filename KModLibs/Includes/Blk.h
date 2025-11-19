@@ -2,7 +2,6 @@
 
 #include <Dev.h>
 
-/** Disk descriptor (physical block device) */
 typedef struct BlockDisk
 {
     const char* Name;        /* "sda", "sdb" */
@@ -13,7 +12,6 @@ typedef struct BlockDisk
 
 } BlockDisk;
 
-/** Partition descriptor (logical slice on a disk) */
 typedef struct BlockPart
 {
     const char* Name;      /* "sda1", "sda2" */
@@ -25,9 +23,6 @@ typedef struct BlockPart
 
 } BlockPart;
 
-/**
- * Functions
- */
 int BlockRegisterDisk(BlockDisk* __Disk__);
 int BlockRegisterPartition(BlockPart* __Part__);
 int BlockRegisterGPTPartitions(BlockDisk*  __Disk__,

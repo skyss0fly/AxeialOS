@@ -1,20 +1,6 @@
 #include <IDT.h>
 #include <Timer.h>
 
-/**
- * @brief Handle hardware interrupts (IRQs).
- *
- * @details Dispatches interrupts based on their vector number:
- * 			Vector 32 (IRQ0): APIC timer interrupt, forwarded to the timer subsystem.
- * 			Vectors 40–47: Legacy PIC slave interrupts, send End Of Interrupt (EOI) to slave PIC.
- * 			All other IRQs: Send EOI to master PIC.
- *
- * @param __Frame__ Pointer to the interrupt frame containing CPU state.
- *
- * @return void
- *
- * @note APIC timer interrupts do not require PIC EOI signaling.
- */
 void
 IrqHandler(InterruptFrame* __Frame__)
 {

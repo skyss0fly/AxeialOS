@@ -2,11 +2,6 @@
 
 #include <EveryType.h>
 
-/** @note POSIX-like VFS */
-
-/**
- * DefStructs
- */
 typedef struct Vnode         Vnode;
 typedef struct Dentry        Dentry;
 typedef struct Superblock    Superblock;
@@ -22,9 +17,6 @@ typedef struct VfsTimespec   VfsTimespec;
 typedef struct VfsMountFlags VfsMountFlags;
 typedef struct VfsNameBuf    VfsNameBuf;
 
-/**
- * Enums
- */
 /*Node Type*/
 typedef enum VnodeType
 {
@@ -124,9 +116,6 @@ typedef enum VfsNotifyMask
 
 } VfsNotifyMask;
 
-/**
- * Structs
- */
 typedef struct VfsTimespec
 {
     long Sec;
@@ -235,9 +224,6 @@ struct File
     void*  Priv;
 }; /*Filentry*/
 
-/**
- * Functions
- */
 int VfsInit(void);
 int VfsShutdown(void);
 

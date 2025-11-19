@@ -1,20 +1,9 @@
+
 #include <BootImg.h>
 #include <RamFs.h>
 #include <String.h>
 #include <VFS.h>
 
-/**
- * @brief Initialize the boot image filesystem
- *
- * @details Scans the Limine module list for the BootImg.img file, which contains
- * 			the initial ramdisk (initramfs/BootImg). Once found, mounts it using RamFS
- * 			to provide access to boot-time files.
- *
- * @return 0 on success, negative error code on failure
- *
- * @note This function is called early in the boot process to establish
- *       the initial filesystem before other system components initialize.
- */
 int
 InitializeBootImage(void)
 {

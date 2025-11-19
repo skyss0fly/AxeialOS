@@ -1,19 +1,7 @@
+
 #include <KrnPrintf.h>
 #include <Serial.h>
 
-/**
- * @brief Kernel printf implementation.
- *
- * @details Provides formatted output to the boot console and serial port.
- * 			Supports standard format specifiers (%d, %u, %x, %s, %c, %p, etc.).
- * 			Acquires a global spinlock to ensure thread-safe output.
- * 			Delegates parsing to ProcessFormatSpecifier.
- *
- * @param __Format__ Format string with optional specifiers.
- * @param ...        Variable arguments matching the format string.
- *
- * @return void
- */
 void
 KrnPrintf(const char* __Format__, ...)
 {
@@ -39,19 +27,6 @@ KrnPrintf(const char* __Format__, ...)
     ReleaseSpinLock(&ConsoleLock);
 }
 
-/**
- * @brief Kernel printf with custom colors.
- *
- * @details Temporarily sets foreground and background colors for output,
- * 			prints the formatted string, then restores previous colors.
- *
- * @param __FG__ Foreground (text) color in 32-bit ARGB.
- * @param __BG__ Background color in 32-bit ARGB.
- * @param __Format__ Format string with optional specifiers.
- * @param ...        Variable arguments matching the format string.
- *
- * @return void
- */
 void
 KrnPrintfColor(uint32_t __FG__, uint32_t __BG__, const char* __Format__, ...)
 {
@@ -83,18 +58,6 @@ KrnPrintfColor(uint32_t __FG__, uint32_t __BG__, const char* __Format__, ...)
     ReleaseSpinLock(&ConsoleLock);
 }
 
-/**
- * @brief Parse and process a format specifier.
- *
- * @details Handles flags, width, precision, length modifiers, and conversion specifiers.
- * 			Supported conversions: integers, unsigned, hex, octal, binary, strings,
- * 			characters, pointers. Floating point is not implemented.
- *
- * @param __Format__ Pointer to the format string (advanced as parsed).
- * @param __Args__   Pointer to the variable argument list.
- *
- * @return void
- */
 void
 ProcessFormatSpecifier(const char** __Format__, __builtin_va_list* __Args__)
 {
@@ -263,20 +226,6 @@ ProcessFormatSpecifier(const char** __Format__, __builtin_va_list* __Args__)
     (*__Format__)++;
 }
 
-/**
- * @brief Process integer format specifiers.
- *
- * @details Extracts integer values from the argument list based on length modifiers
- *			and signedness. Converts to string in the requested base and applies
- *			formatting (padding, prefixes, alignment).
- *
- * @param __Args__   Pointer to the variable argument list.
- * @param __Flags__  Formatting flags.
- * @param __Base__   Numeric base (2, 8, 10, 16).
- * @param __Signed__ Nonzero if signed integer, zero if unsigned.
- *
- * @return void
- */
 void
 ProcessInteger(__builtin_va_list* __Args__, FormatFlags* __Flags__, int __Base__, int __Signed__)
 {
@@ -351,17 +300,6 @@ ProcessInteger(__builtin_va_list* __Args__, FormatFlags* __Flags__, int __Base__
     FormatOutput(Buffer, __Flags__, IsNegative, __Base__);
 }
 
-/**
- * @brief Process string format specifier.
- *
- * @details Prints a string with optional precision and width, applying left or right
- * 			alignment padding as specified.
- *
- * @param __Args__  Pointer to the variable argument list.
- * @param __Flags__ Formatting flags.
- *
- * @return void
- */
 void
 ProcessString(__builtin_va_list* __Args__, FormatFlags* __Flags__)
 {
@@ -402,16 +340,6 @@ ProcessString(__builtin_va_list* __Args__, FormatFlags* __Flags__)
     }
 }
 
-/**
- * @brief Process character format specifier.
- *
- * @details Prints a single character with optional width and alignment padding.
- *
- * @param __Args__  Pointer to the variable argument list.
- * @param __Flags__ Formatting flags.
- *
- * @return void
- */
 void
 ProcessChar(__builtin_va_list* __Args__, FormatFlags* __Flags__)
 {
@@ -438,16 +366,6 @@ ProcessChar(__builtin_va_list* __Args__, FormatFlags* __Flags__)
     }
 }
 
-/**
- * @brief Process pointer format specifier.
- *
- * @details Prints a pointer value in hexadecimal format with a "0x" prefix.
- *
- * @param __Args__  Pointer to the variable argument list.
- * @param __Flags__ Formatting flags.
- *
- * @return void
- */
 void
 ProcessPointer(__builtin_va_list* __Args__, FormatFlags* __Flags__)
 {
@@ -459,16 +377,6 @@ ProcessPointer(__builtin_va_list* __Args__, FormatFlags* __Flags__)
     PutPrint(Buffer);
 }
 
-/**
- * @brief Format numeric output with padding and prefixes.
- *
- * @param __Buffer__     String representation of the number.
- * @param __Flags__      Formatting flags.
- * @param __IsNegative__ Nonzero if the number is negative.
- * @param __Base__       Numeric base (2, 8, 10, 16).
- *
- * @return void
- */
 void
 FormatOutput(const char* __Buffer__, FormatFlags* __Flags__, int __IsNegative__, int __Base__)
 {
@@ -544,19 +452,6 @@ FormatOutput(const char* __Buffer__, FormatFlags* __Flags__, int __IsNegative__,
     }
 }
 
-/**
- * @brief Convert unsigned integer to string (extended).
- *
- * @details Converts a 64-bit unsigned integer to a string in the given base.
- * 			Supports uppercase hex output.
- *
- * @param __Value__     Unsigned integer value.
- * @param __Buffer__    Output buffer.
- * @param __Base__      Numeric base (2, 8, 10, 16).
- * @param __Uppercase__ Nonzero for uppercase hex digits.
- *
- * @return void
- */
 void
 UnsignedToStringEx(uint64_t __Value__, char* __Buffer__, int __Base__, int __Uppercase__)
 {
@@ -587,9 +482,6 @@ UnsignedToStringEx(uint64_t __Value__, char* __Buffer__, int __Base__, int __Upp
     ReverseString(__Buffer__, Iteration);
 }
 
-/**
- * @brief Print an integer in the given base.
- */
 void
 PrintInteger(int __Value__, int __Base__, int __Uppercase__)
 {
@@ -610,9 +502,6 @@ PrintInteger(int __Value__, int __Base__, int __Uppercase__)
     PrintString(Buffer);
 }
 
-/**
- * @brief Print an unsigned integer in the given base.
- */
 void
 PrintUnsigned(uint32_t __Value__, int __Base__, int __Uppercase__)
 {
@@ -633,10 +522,6 @@ PrintUnsigned(uint32_t __Value__, int __Base__, int __Uppercase__)
     PrintString(Buffer);
 }
 
-/**
- * @brief Print a string
- * (null-safe).
- */
 void
 PrintString(const char* __String__)
 {
@@ -648,18 +533,12 @@ PrintString(const char* __String__)
     PutPrint(__String__);
 }
 
-/**
- * @brief Print a single character.
- */
 void
 PrintChar(char __Char__)
 {
     PutChar(__Char__);
 }
 
-/**
- * @brief Print a pointer value in hexadecimal.
- */
 void
 PrintPointer(void* __Pointer__)
 {
@@ -667,10 +546,6 @@ PrintPointer(void* __Pointer__)
     PrintUnsigned((uint32_t)(uintptr_t)__Pointer__, 16, 0);
 }
 
-/**
- * @brief Get the length of a string.
- * Libc strlen?
- */
 int
 StringLength(const char* __String__)
 {
@@ -682,9 +557,6 @@ StringLength(const char* __String__)
     return Length;
 }
 
-/**
- * @brief Reverse a string in place.
- */
 void
 ReverseString(char* __String__, int __Length__)
 {
@@ -701,9 +573,6 @@ ReverseString(char* __String__, int __Length__)
     }
 }
 
-/**
- * @brief Convert integer to string in given base.
- */
 void
 IntegerToString(int __Value__, char* __Buffer__, int __Base__)
 {
@@ -739,9 +608,6 @@ IntegerToString(int __Value__, char* __Buffer__, int __Base__)
     ReverseString(__Buffer__, Iteration);
 }
 
-/**
- * @brief Convert unsigned integer to string in given base.
- */
 void
 UnsignedToString(uint32_t __Value__, char* __Buffer__, int __Base__)
 {

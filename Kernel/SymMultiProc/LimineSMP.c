@@ -4,28 +4,13 @@
 #include <Timer.h>          /* Timer functions for timeouts */
 #include <VMM.h>            /* Virtual memory management for APIC access */
 
-/** @brief Some Globals */
 SmpManager        Smp;
 SpinLock          SMPLock;
 volatile uint32_t CpuStartupCount = 0;
 
-/**
- * @brief Get the current CPU ID.
- *
- * @details Reads the IA32_APIC_BASE MSR to locate the Local APIC base address,
- * 			then extracts the LAPIC ID from the APIC ID register. The LAPIC ID
- * 			is matched against the SMP manager’s CPU list to return the logical
- * 			CPU index.
- *
- * @return The logical CPU ID (index in Smp.Cpus).
- *
- * @note If the LAPIC ID is not found in the SMP manager, the raw LAPIC ID
- *       is returned instead.
- */
 uint32_t
 GetCurrentCpuId(void)
 {
-
     uint64_t ApicBaseMsr  = ReadMsr(0x1B);            /* IA32_APIC_BASE Model-Specific Register */
     uint64_t ApicPhysBase = ApicBaseMsr & 0xFFFFF000; /* Extract 4KB-aligned base address */
 
@@ -43,21 +28,6 @@ GetCurrentCpuId(void)
     return ApicId;
 }
 
-/**
- * @brief Initialize symmetric multiprocessing (SMP).
- *
- * @details Uses Limine’s SMP protocol to detect and initialize multiple CPUs.
- * 			If no SMP response is available, falls back to single-CPU mode.
- * 			Populates the SmpManager structure with CPU information.
- * 			Marks the BSP (Bootstrap Processor) as online.
- * 			Sets up Application Processors (APs) with the entry point and waits
- * 			for them to signal startup.
- *
- * @return void
- *
- * @note This function must be called during kernel initialization.
- *       It ensures all CPUs are tracked and properly started.
- */
 void
 InitializeSmp(void)
 {
@@ -104,14 +74,12 @@ InitializeSmp(void)
 
         if (CpuInfo->lapic_id == SmpResponse->bsp_lapic_id)
         {
-
             Smp.Cpus[Index].Status  = CPU_STATUS_ONLINE;
             Smp.Cpus[Index].Started = 1;
             PDebug("SMP: BSP CPU %u (LAPIC ID %u)\n", Index, CpuInfo->lapic_id);
         }
         else
         {
-
             Smp.Cpus[Index].Status = CPU_STATUS_STARTING;
             CpuInfo->goto_address  = ApEntryPoint; /* Set AP entry point */
             StartedAps++;

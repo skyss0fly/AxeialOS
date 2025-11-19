@@ -9,16 +9,8 @@
 #include <VFS.h>
 #include <VMM.h>
 
-/**
- * Structures
- */
-
-/**
- * @brief ELF64 execution image: entry point, user stack pointer, and new address space.
- */
 typedef struct ElfExecImage
 {
-
     uint64_t            Entry;           /**< Entry point (final virtual address) */
     uint64_t            UserSp;          /**< Initial user-mode stack pointer */
     VirtualMemorySpace* Space;           /**< Newly created user address space */
@@ -27,9 +19,6 @@ typedef struct ElfExecImage
 
 } ElfExecImage;
 
-/**
- * Functions
- */
 int      ElfLoadExec(Process*           __Proc__,
                      const char*        __Path__,
                      const char* const* __Argv__,

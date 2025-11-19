@@ -1,8 +1,5 @@
 #pragma once
 
-/**
- * APIC Constants
- */
 #define TimerApicBaseMsr           0x1B
 #define TimerApicBaseEnable        (1ULL << 11)
 #define TimerApicRegVersion        0x030

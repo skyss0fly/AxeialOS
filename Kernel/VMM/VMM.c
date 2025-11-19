@@ -1,24 +1,10 @@
 #include <VMM.h>
 
-/** @brief Global VMM State. */
 VirtualMemoryManager Vmm = {0};
 
-/**
- * @brief Initialize the Virtual Memory Manager (VMM).
- *
- * @details Sets up the kernel’s virtual memory environment by:
- * 			Reading the current CR3 register to determine the kernel PML4.
- * 			Allocating and initializing the kernel’s VirtualMemorySpace structure.
- * 			Linking physical and virtual addresses for the PML4.
- *
- * @return void
- *
- * @note Must be called before creating or switching virtual spaces.
- */
 void
 InitializeVmm(void)
 {
-
     PInfo("Initializing Virtual Memory Manager...\n");
 
     Vmm.HhdmOffset = Pmm.HhdmOffset;
@@ -45,21 +31,9 @@ InitializeVmm(void)
     PSuccess("VMM initialized with kernel space at 0x%016lx\n", Vmm.KernelPml4Physical);
 }
 
-/**
- * @brief Create a new virtual memory space.
- *
- * @details Allocates a new VirtualMemorySpace structure and a fresh PML4 table.
- * 			Initializes the PML4 entries, copying kernel mappings for higher-half
- * 			addresses.
- *
- * @return Pointer to the newly created VirtualMemorySpace, or NULL on failure.
- *
- * @note Caller is responsible for destroying the space when no longer needed.
- */
 VirtualMemorySpace*
 CreateVirtualSpace(void)
 {
-
     if (!Vmm.KernelSpace || !Vmm.KernelSpace->Pml4)
     {
         PError("VMM not properly initialized\n");
@@ -115,22 +89,9 @@ CreateVirtualSpace(void)
     return Space;
 }
 
-/**
- * @brief Destroy a virtual memory space.
- *
- * @details Decrements the reference count of the given space. If the count reaches zero,
- * 			frees all associated page tables and the space structure itself.
- *
- * @param __Space__ Pointer to the VirtualMemorySpace to destroy.
- *
- * @return void
- *
- * @warning Cannot destroy the kernel’s own space.
- */
 void
 DestroyVirtualSpace(VirtualMemorySpace* __Space__)
 {
-
     if (!__Space__ || __Space__ == Vmm.KernelSpace)
     {
         PWarn("Cannot destroy kernel space or null space\n");
@@ -201,26 +162,12 @@ DestroyVirtualSpace(VirtualMemorySpace* __Space__)
     PDebug("Virtual space destroyed\n");
 }
 
-/**
- * @brief Map a physical page into a virtual memory space.
- *
- * @details Inserts a mapping from a virtual address to a physical address in the given space’s page
- * tables. Ensures alignment and validity of addresses before mapping.
- *
- * @param __Space__   Target VirtualMemorySpace.
- * @param __VirtAddr__ Virtual address to map.
- * @param __PhysAddr__ Physical address to map to.
- * @param __Flags__   Page table flags (writable, user-accessible).
- *
- * @return 1 on success, 0 on failure.
- */
 int
 MapPage(VirtualMemorySpace* __Space__,
         uint64_t            __VirtAddr__,
         uint64_t            __PhysAddr__,
         uint64_t            __Flags__)
 {
-
     if (!__Space__ || (__VirtAddr__ % PageSize) != 0 || (__PhysAddr__ % PageSize) != 0)
     {
         PError("Invalid parameters for MapPage\n");
@@ -256,21 +203,9 @@ MapPage(VirtualMemorySpace* __Space__,
     return 1;
 }
 
-/**
- * @brief Unmap a virtual page from a memory space.
- *
- * @details Removes the mapping for the given virtual address, invalidates the TLB entry,
- * 			and frees the physical page if necessary.
- *
- * @param __Space__   Target VirtualMemorySpace.
- * @param __VirtAddr__ Virtual address to unmap.
- *
- * @return 1 on success, 0 if the page was not mapped or parameters are invalid.
- */
 int
 UnmapPage(VirtualMemorySpace* __Space__, uint64_t __VirtAddr__)
 {
-
     if (!__Space__ || (__VirtAddr__ % PageSize) != 0)
     {
         PError("Invalid parameters for UnmapPage\n");
@@ -302,21 +237,9 @@ UnmapPage(VirtualMemorySpace* __Space__, uint64_t __VirtAddr__)
     return 1;
 }
 
-/**
- * @brief Resolve the physical address for a given virtual address.
- *
- * @details Walks the page tables of the given space to find the physical address
- * 			corresponding to the provided virtual address.
- *
- * @param __Space__   Target VirtualMemorySpace.
- * @param __VirtAddr__ Virtual address to resolve.
- *
- * @return Physical address if mapped, 0 otherwise.
- */
 uint64_t
 GetPhysicalAddress(VirtualMemorySpace* __Space__, uint64_t __VirtAddr__)
 {
-
     if (!__Space__)
     {
         PError("Invalid space for GetPhysicalAddress\n");
@@ -344,24 +267,9 @@ GetPhysicalAddress(VirtualMemorySpace* __Space__, uint64_t __VirtAddr__)
     return PhysBase + Offset;
 }
 
-/**
- * @brief Switch the CPU to a new virtual memory space.
- *
- * @details Loads the CR3 register with the physical base of the given space’s PML4,
- * 			effectively switching the active page tables.
- *
- * @param __Space__ Target VirtualMemorySpace to switch to.
- *
- * @return void
- *
- * @note This affects all subsequent memory accesses by the CPU.
- *
- * @deprecated Not used often
- */
 void
 SwitchVirtualSpace(VirtualMemorySpace* __Space__)
 {
-
     if (!__Space__)
     {
         PError("Cannot switch to null virtual space\n");

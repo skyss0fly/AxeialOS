@@ -3,12 +3,8 @@
 #include <AxeThreads.h>
 #include <IDT.h>
 
-/**
- * Per-CPU Scheduler
- */
 typedef struct
 {
-
     Thread*  ReadyQueue;      /*Ready queue*/
     Thread*  WaitingQueue;    /*Blocked threads*/
     Thread*  ZombieQueue;     /*Terminated threads*/
@@ -28,14 +24,8 @@ typedef struct
 
 } CpuScheduler;
 
-/**
- * Globals
- */
 extern CpuScheduler CpuSchedulers[MaxCPUs];
 
-/**
- * Functions
- */
 void     InitializeScheduler(void);
 void     InitializeCpuScheduler(uint32_t __CpuId__);
 void     Schedule(uint32_t __CpuId__, InterruptFrame* __Frame__);

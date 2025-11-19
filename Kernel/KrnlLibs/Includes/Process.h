@@ -3,9 +3,6 @@
 #include <AllTypes.h>
 #include <AxeThreads.h>
 
-/**
- * Enums
- */
 typedef enum ProcSignal
 {
 
@@ -21,7 +18,6 @@ typedef enum ProcSignal
 
 typedef struct ProcSigHandler
 {
-
     void (*Handler)(int); /**< Handler function (kernel trampoline) */
     uint64_t Mask;        /**< Signals blocked during handler */
     int      Flags;       /**< Future flags (e.g., restart semantics) */
@@ -38,12 +34,8 @@ typedef enum ProcFdKind
 
 } ProcFdKind;
 
-/**
- * Sturctures
- */
 typedef struct ProcFd
 {
-
     long       Fd;     /**< Descriptor index */
     ProcFdKind Kind;   /**< Descriptor class */
     void*      Obj;    /**< Bound object (File*, device ctx) */
@@ -54,7 +46,6 @@ typedef struct ProcFd
 
 typedef struct ProcCred
 {
-
     long Uid;   /**< User ID */
     long Gid;   /**< Group ID */
     long Umask; /**< POSIX umask bits */
@@ -63,7 +54,6 @@ typedef struct ProcCred
 
 typedef struct Process
 {
-
     /* Identity and job control */
     long PID;  /**< Process ID */
     long PPID; /**< Parent process ID */
@@ -98,16 +88,12 @@ typedef struct Process
 
 typedef struct ProcTable
 {
-
     Process** Items; /**< Array of process pointers */
     long      Count; /**< Number of entries */
     long      Cap;   /**< Capacity */
 
 } ProcTable;
 
-/**
- * Functions
- */
 int      ProcInit(void);
 Process* ProcCreate(long __ParentPid__);
 Process* ProcFork(Process* __Parent__);
@@ -141,9 +127,6 @@ long     ProcWaitPid(long __Pid__, int* __OutStatus__, int __Options__);
 int      ProcReap(Process* __Parent__, long __ChildPid__);
 long     GetPid(void);
 
-/**
- * Public
- */
 KEXPORT(ProcInit);
 KEXPORT(ProcCreate);
 KEXPORT(ProcFork);

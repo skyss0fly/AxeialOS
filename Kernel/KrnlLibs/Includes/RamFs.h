@@ -6,9 +6,6 @@
 #include <VFS.h>
 #include <VMM.h>
 
-/**
- * Constants
- */
 #define RamFSMaxChildren 64
 #define RamFSMagic       0xCAFEBABE
 #define RamFSNodeMagic   0xBAADF00D
@@ -18,9 +15,6 @@
 #define CpioAlign     4
 #define CpioTrailer   "TRAILER!!!"
 
-/**
- * Types
- */
 typedef enum RamFSNodeType
 {
     RamFSNode_File,
@@ -28,9 +22,6 @@ typedef enum RamFSNodeType
 
 } RamFSNodeType;
 
-/**
- * Structures
- */
 typedef struct RamFSNode
 {
     struct RamFSNode* Next;                       /* Sibling linkage */
@@ -51,14 +42,8 @@ typedef struct
 
 } RamFSContext;
 
-/**
- * Globals
- */
 extern RamFSContext RamFS;
 
-/**
- * Functions
- */
 uint32_t   CpioAlignUp(uint32_t __Value__, uint32_t __Align__);
 uint32_t   CpioParseHex(const char* __Hex__);
 RamFSNode* RamFSCreateNode(const char* __Name__, RamFSNodeType __Type__);
@@ -80,9 +65,6 @@ uint32_t   RamFSListChildren(RamFSNode* __Dir__, RamFSNode** __Buffer__, uint32_
 size_t     RamFSReadFile(const char* __Path__, void* __Buffer__);
 char*      RamFSJoinPath(const char* __DirPath__, const char* __Name__);
 
-/**
- * VFS Extras
- */
 typedef struct RamVfsPrivNode
 {
     RamFSNode* Node;
@@ -128,8 +110,5 @@ int  RamVfsSuperUmount(Superblock*);
 Superblock* RamFsMountImpl(const char*, const char*);
 int         BootMountRamFs(const void* __Initrd__, size_t __Len__);
 
-/**
- * Globals
- */
 extern const VnodeOps __RamVfsOps__;
 extern const SuperOps __RamVfsSuperOps__;

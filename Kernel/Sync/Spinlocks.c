@@ -1,21 +1,9 @@
 #include <SMP.h>  /* Symmetric multiprocessing functions */
 #include <Sync.h> /* Synchronization primitives definitions */
 
-/** @brief Some Globals and Statics */
 SpinLock        ConsoleLock;
 static uint64_t SavedFlags[MaxCPUs];
 
-/**
- * @brief Initialize a spinlock.
- *
- * @details Sets the lock to an unlocked state, clears the owner CPU ID,
- * 			and assigns a name for debugging purposes.
- *
- * @param __Lock__ Pointer to the SpinLock structure.
- * @param __Name__ Human-readable name for debugging.
- *
- * @return void
- */
 void
 InitializeSpinLock(SpinLock* __Lock__, const char* __Name__)
 {
@@ -24,17 +12,6 @@ InitializeSpinLock(SpinLock* __Lock__, const char* __Name__)
     __Lock__->Name  = __Name__;   /* Assign name for debugging */
 }
 
-/**
- * @brief Acquire a spinlock.
- *
- * @details Spins until the lock becomes available. Disables interrupts
- * 			while holding the lock to prevent deadlocks. Saves CPU flags
- * 			for later restoration.
- *
- * @param __Lock__ Pointer to the SpinLock structure.
- *
- * @return void
- */
 void
 AcquireSpinLock(SpinLock* __Lock__)
 {
@@ -59,15 +36,6 @@ AcquireSpinLock(SpinLock* __Lock__)
     }
 }
 
-/**
- * @brief Release a spinlock.
- *
- * @details Restores saved CPU flags, clears the lock, and resets the owner.
- *
- * @param __Lock__ Pointer to the SpinLock structure.
- *
- * @return void
- */
 void
 ReleaseSpinLock(SpinLock* __Lock__)
 {
@@ -81,15 +49,6 @@ ReleaseSpinLock(SpinLock* __Lock__)
     __asm__ volatile("pushq %0; popfq" ::"r"(Flags) : "memory");
 }
 
-/**
- * @brief Attempt to acquire a spinlock without blocking.
- *
- * @details Uses atomic compare-and-exchange to acquire the lock if free.
- *
- * @param __Lock__ Pointer to the SpinLock structure.
- *
- * @return true if acquired successfully, false otherwise.
- */
 bool
 TryAcquireSpinLock(SpinLock* __Lock__)
 {

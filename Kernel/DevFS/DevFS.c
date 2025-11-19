@@ -1,3 +1,4 @@
+
 #include <DevFS.h>
 
 /* Registry limits */
@@ -72,8 +73,6 @@ typedef struct DevFsNodePriv
 
 } DevFsNodePriv;
 
-/** @section Dev helpers */
-
 static long
 __dev_index__(const char* __Name__)
 {
@@ -98,15 +97,6 @@ __dev_find__(const char* __Name__)
     return (idx >= 0) ? __DevTable__[idx] : 0;
 }
 
-/**
- * @brief Initialize the DevFS registry
- *
- * Resets the device registry state, clearing all registered devices
- * and resetting the root superblock reference. Should be called
- * early during kernel initialization.
- *
- * @return 0 on success (always succeeds)
- */
 int
 DevFsInit(void)
 {
@@ -116,20 +106,6 @@ DevFsInit(void)
     return 0;
 }
 
-/**
- * @brief Register a character device with DevFS
- *
- * Adds a new character device entry to the DevFS registry.
- * The device is identified by its name, major/minor numbers,
- * and operation table.
- *
- * @param __Name__   Name of the device (e.g., "tty")
- * @param __Major__  Major number of the device
- * @param __Minor__  Minor number of the device
- * @param __Ops__    Character device operations table
- * @param __Context__ Driver-specific context pointer
- * @return 0 on success, -1 on failure (invalid parameters or registry full)
- */
 int
 DevFsRegisterCharDevice(const char* __Name__,
                         uint32_t    __Major__,
@@ -170,20 +146,6 @@ DevFsRegisterCharDevice(const char* __Name__,
     return 0;
 }
 
-/**
- * @brief Register a block device with DevFS
- *
- * Adds a new block device entry to the DevFS registry.
- * The device is identified by its name, major/minor numbers,
- * and operation table.
- *
- * @param __Name__   Name of the device (e.g., "sda")
- * @param __Major__  Major number of the device
- * @param __Minor__  Minor number of the device
- * @param __Ops__    Block device operations table
- * @param __Context__ Driver-specific context pointer
- * @return 0 on success, -1 on failure (invalid parameters or registry full)
- */
 int
 DevFsRegisterBlockDevice(const char* __Name__,
                          uint32_t    __Major__,
@@ -224,15 +186,6 @@ DevFsRegisterBlockDevice(const char* __Name__,
     return 0;
 }
 
-/**
- * @brief Unregister a device from DevFS
- *
- * Removes a device entry from the DevFS registry by name.
- * Frees associated memory and shifts remaining entries.
- *
- * @param __Name__ Name of the device to unregister
- * @return 0 on success, -1 if device not found
- */
 int
 DevFsUnregisterDevice(const char* __Name__)
 {
@@ -251,15 +204,6 @@ DevFsUnregisterDevice(const char* __Name__)
     return 0;
 }
 
-/**
- * @brief Register DevFS with the VFS
- *
- * Creates a filesystem type descriptor for DevFS and registers
- * it with the Virtual File System layer. This allows mounting
- * DevFS under the VFS namespace.
- *
- * @return 0 on success, -1 on failure
- */
 int
 DevFsRegister(void)
 {
@@ -275,16 +219,6 @@ DevFsRegister(void)
     return 0;
 }
 
-/**
- * @brief Mount DevFS
- *
- * Allocates and initializes the DevFS superblock and root vnode.
- * Called by the VFS when mounting the "devfs" filesystem type.
- *
- * @param __Dev__  Device identifier (unused for DevFS)
- * @param __Opts__ Mount options string (unused for DevFS)
- * @return Pointer to the created superblock, or NULL on failure
- */
 Superblock*
 DevFsMountImpl(const char* __Dev__ __attribute__((unused)),
                const char* __Opts__ __attribute__((unused)))
@@ -336,17 +270,6 @@ DevFsMountImpl(const char* __Dev__ __attribute__((unused)),
     return Sb;
 }
 
-/**
- * @brief Open a vnode in DevFS
- *
- * Handles opening of directory vnodes and device vnodes.
- * For device vnodes, allocates a file context and calls
- * the device's open operation if provided.
- *
- * @param __Node__ Vnode to open
- * @param __File__ File structure to initialize
- * @return 0 on success, -1 on failure
- */
 static int
 DevVfsOpen(Vnode* __Node__, File* __File__)
 {
@@ -403,15 +326,6 @@ DevVfsOpen(Vnode* __Node__, File* __File__)
     return -1;
 }
 
-/**
- * @brief Close a file in DevFS
- *
- * Releases resources associated with the file and calls
- * the device's close operation if provided.
- *
- * @param __File__ File structure to close
- * @return 0 on success, -1 on failure
- */
 static int
 DevVfsClose(File* __File__)
 {
@@ -441,17 +355,6 @@ DevVfsClose(File* __File__)
     return 0;
 }
 
-/**
- * @brief Read from a DevFS file
- *
- * Dispatches read requests to the underlying character or block
- * device driver. For block devices, performs block‑aligned streaming.
- *
- * @param __File__ File structure representing the open device
- * @param __Buf__  Buffer to store read data
- * @param __Len__  Number of bytes to read
- * @return Number of bytes read, or -1 on failure
- */
 static long
 DevVfsRead(File* __File__, void* __Buf__, long __Len__)
 {
@@ -541,18 +444,6 @@ DevVfsRead(File* __File__, void* __Buf__, long __Len__)
     return -1;
 }
 
-/**
- * @brief Write to a DevFS file
- *
- * Dispatches write requests to the underlying character or block
- * device driver. For block devices, performs read‑modify‑write
- * to preserve untouched bytes.
- *
- * @param __File__ File structure representing the open device
- * @param __Buf__  Buffer containing data to write
- * @param __Len__  Number of bytes to write
- * @return Number of bytes written, or -1 on failure
- */
 static long
 DevVfsWrite(File* __File__, const void* __Buf__, long __Len__)
 {
@@ -646,17 +537,6 @@ DevVfsWrite(File* __File__, const void* __Buf__, long __Len__)
     return -1;
 }
 
-/**
- * @brief Seek within a DevFS file
- *
- * Updates the file offset based on the specified whence.
- * For block devices, adjusts LBA and block offset accordingly.
- *
- * @param __File__   File structure representing the open device
- * @param __Off__    Offset value
- * @param __Whence__ Reference point (VSeekSET, VSeekCUR, VSeekEND)
- * @return New file offset, or -1 on failure
- */
 static long
 DevVfsLseek(File* __File__, long __Off__, int __Whence__)
 {
@@ -722,17 +602,6 @@ DevVfsLseek(File* __File__, long __Off__, int __Whence__)
     return New;
 }
 
-/**
- * @brief Perform an I/O control operation on a DevFS file
- *
- * Dispatches ioctl requests to the underlying character or block
- * device driver.
- *
- * @param __File__ File structure representing the open device
- * @param __Cmd__  I/O control command
- * @param __Arg__  Pointer to command arguments (may be NULL)
- * @return 0 on success, -1 on failure
- */
 static int
 DevVfsIoctl(File* __File__, unsigned long __Cmd__, void* __Arg__ /*Could have used Vargs*/)
 {
@@ -767,15 +636,6 @@ DevVfsIoctl(File* __File__, unsigned long __Cmd__, void* __Arg__ /*Could have us
     return -1;
 }
 
-/**
- * @brief Get file status for a DevFS vnode
- *
- * Fills out a VfsStat structure with metadata for directories or devices.
- *
- * @param __Node__ Vnode to query
- * @param __Out__  Output stat structure
- * @return 0 on success, -1 on failure
- */
 static int
 DevVfsStat(Vnode* __Node__, VfsStat* __Out__)
 {
@@ -823,16 +683,6 @@ DevVfsStat(Vnode* __Node__, VfsStat* __Out__)
     return -1;
 }
 
-/**
- * @brief Read directory entries from DevFS
- *
- * Synthesizes "." and ".." entries, then enumerates registered devices.
- *
- * @param __Dir__    Directory vnode
- * @param __Buf__    Output buffer for VfsDirEnt entries
- * @param __BufLen__ Size of output buffer
- * @return Bytes written, or -1 on failure
- */
 static long
 DevVfsReaddir(Vnode* __Dir__, void* __Buf__, long __BufLen__)
 {
@@ -854,7 +704,6 @@ DevVfsReaddir(Vnode* __Dir__, void* __Buf__, long __BufLen__)
     VfsDirEnt* DE    = (VfsDirEnt*)__Buf__;
     long       Wrote = 0;
 
-    /** Synthesize "." entry */
     if (Wrote < Max)
     {
         DE[Wrote].Name[0] = '.';
@@ -864,7 +713,6 @@ DevVfsReaddir(Vnode* __Dir__, void* __Buf__, long __BufLen__)
         Wrote++;
     }
 
-    /** Synthesize ".." entry */
     if (Wrote < Max)
     {
         DE[Wrote].Name[0] = '.';
@@ -875,7 +723,6 @@ DevVfsReaddir(Vnode* __Dir__, void* __Buf__, long __BufLen__)
         Wrote++;
     }
 
-    /** Enumerate registered devices */
     for (long I = 0; I < __DevCount__ && Wrote < Max; I++)
     {
         DeviceEntry* E = __DevTable__[I];
@@ -902,15 +749,6 @@ DevVfsReaddir(Vnode* __Dir__, void* __Buf__, long __BufLen__)
     return Wrote * (long)sizeof(VfsDirEnt);
 }
 
-/**
- * @brief Lookup a device node in DevFS
- *
- * Creates a new vnode bound to a registered device entry.
- *
- * @param __Dir__  Directory vnode
- * @param __Name__ Device name to lookup
- * @return Vnode pointer on success, NULL on failure
- */
 static Vnode*
 DevVfsLookup(Vnode* __Dir__, const char* __Name__)
 {
@@ -952,17 +790,6 @@ DevVfsLookup(Vnode* __Dir__, const char* __Name__)
     return V;
 }
 
-/**
- * @brief Create a file in DevFS
- *
- * DevFS does not support userland creation; always fails.
- *
- * @param __Dir__   Parent directory vnode
- * @param __Name__  Name of the file
- * @param __Flags__ Creation flags
- * @param __Perm__  Permissions
- * @return -1 (always fails)
- */
 static int
 DevVfsCreate(Vnode* __Dir__, const char* __Name__, long __Flags__, VfsPerm __Perm__)
 {
@@ -973,16 +800,6 @@ DevVfsCreate(Vnode* __Dir__, const char* __Name__, long __Flags__, VfsPerm __Per
     return -1;
 }
 
-/**
- * @brief Create a directory in DevFS
- *
- * DevFS does not support userland mkdir; always fails.
- *
- * @param __Dir__  Parent directory vnode
- * @param __Name__ Name of the directory
- * @param __Perm__ Permissions
- * @return -1 (always fails)
- */
 static int
 DevVfsMkdir(Vnode* __Dir__, const char* __Name__, VfsPerm __Perm__)
 {
@@ -992,14 +809,6 @@ DevVfsMkdir(Vnode* __Dir__, const char* __Name__, VfsPerm __Perm__)
     return -1;
 }
 
-/**
- * @brief Sync a DevFS vnode
- *
- * No-op for DevFS; always succeeds.
- *
- * @param __Node__ Vnode to sync
- * @return 0
- */
 static int
 DevVfsSync(Vnode* __Node__)
 {
@@ -1007,14 +816,6 @@ DevVfsSync(Vnode* __Node__)
     return 0;
 }
 
-/**
- * @brief Sync the DevFS superblock
- *
- * No-op for DevFS; always succeeds.
- *
- * @param __Sb__ Superblock to sync
- * @return 0
- */
 static int
 DevVfsSuperSync(Superblock* __Sb__)
 {
@@ -1022,15 +823,6 @@ DevVfsSuperSync(Superblock* __Sb__)
     return 0;
 }
 
-/**
- * @brief Get filesystem statistics for DevFS
- *
- * Fills out a VfsStatFs structure with DevFS metadata.
- *
- * @param __Sb__  Superblock to query
- * @param __Out__ Output statfs structure
- * @return 0 on success, -1 on failure
- */
 static int
 DevVfsSuperStatFs(Superblock* __Sb__, VfsStatFs* __Out__)
 {
@@ -1050,13 +842,6 @@ DevVfsSuperStatFs(Superblock* __Sb__, VfsStatFs* __Out__)
     return 0;
 }
 
-/**
- * @brief Release the DevFS superblock
- *
- * Frees the root vnode and associated private data.
- *
- * @param __Sb__ Superblock to release
- */
 static void
 DevVfsSuperRelease(Superblock* __Sb__)
 {
@@ -1077,22 +862,12 @@ DevVfsSuperRelease(Superblock* __Sb__)
     KFree(__Sb__);
 }
 
-/**
- * @brief Unmount the DevFS superblock
- *
- * No-op for DevFS; always succeeds.
- *
- * @param __Sb__ Superblock to unmount
- * @return 0
- */
 static int
 DevVfsSuperUmount(Superblock* __Sb__)
 {
     (void)__Sb__;
     return 0;
 }
-
-/** @section Null and Zero , /dev/null and /dev/zero */
 
 static long
 __null_read__(void* __Ctx__, void* __Buf__, long __Len__)
@@ -1154,14 +929,6 @@ __zero_write__(void* __Ctx__, const void* __Buf__, long __Len__)
     return __Len__;
 }
 
-/**
- * @brief Register seed devices (/dev/null, /dev/zero)
- *
- * Creates and registers the standard null and zero devices
- * in the DevFS registry.
- *
- * @return 0 on success
- */
 int
 DevFsRegisterSeedDevices(void)
 {

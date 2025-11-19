@@ -2,8 +2,6 @@
 #include <Heaps.h>
 #include <Logings.h>
 
-/** @test Some testing for char devices and subchar devices like bus (in this case a pci)*/
-
 typedef struct
 {
     int DoesNothing;

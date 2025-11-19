@@ -1,18 +1,7 @@
 #include <KHeap.h>
 
-/** @brief Global KHeap State */
 KernelHeapManager KHeap;
 
-/**
- * @brief Initialize the kernel heap manager.
- *
- * @details Sets up slab caches for standard object sizes (powers of two).
- *			Each cache is initialized with its object size and capacity.
- *
- * @return void
- *
- * @note Must be called before using KMalloc or KFree.
- */
 void
 InitializeKHeap(void)
 {
@@ -46,17 +35,6 @@ InitializeKHeap(void)
     PSuccess("KHeap initialized with %u slab caches\n", KHeap.CacheCount);
 }
 
-/**
- * @brief Allocate memory from the kernel heap.
- *
- * @details For small allocations (≤ 2048 bytes), uses the slab allocator.
- * 			For large allocations (> 2048 bytes), allocates directly from PMM.
- * 			Zeroes out allocated objects for security.
- *
- * @param __Size__ Requested allocation size in bytes.
- *
- * @return Pointer to allocated memory, or NULL if allocation fails.
- */
 void*
 KMalloc(size_t __Size__)
 {
@@ -131,16 +109,6 @@ KMalloc(size_t __Size__)
     return (void*)Object;
 }
 
-/**
- * @brief Free memory allocated from the kernel heap.
- *
- * @details If the pointer belongs to a slab, returns it to the slab’s free list.
- * 			If it was a large allocation, frees the corresponding physical page.
- *
- * @param __Ptr__ Pointer to memory to free.
- *
- * @return void
- */
 void
 KFree(void* __Ptr__)
 {

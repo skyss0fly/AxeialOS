@@ -10,9 +10,6 @@
 #include <VFS.h>
 #include <VMM.h>
 
-/**
- * @brief ELF64 constants and structures (x86_64, little-endian).
- */
 #define ElfMag0       0x7F
 #define ElfMag1       'E'
 #define ElfMag2       'L'
@@ -40,7 +37,6 @@
 
 typedef struct Elf64Ehdr
 {
-
     unsigned char Ident[16];
     uint16_t      Type;
     uint16_t      Machine;
@@ -60,7 +56,6 @@ typedef struct Elf64Ehdr
 
 typedef struct Elf64Phdr
 {
-
     uint32_t Type;
     uint32_t Flags;
     uint64_t Offset;
@@ -72,16 +67,6 @@ typedef struct Elf64Phdr
 
 } Elf64Phdr;
 
-/**
- * @brief Convert ELF segment flags to VMM page flags for user mappings.
- *
- * Sets NX only when PF_X is not present. PF_W sets writability; PF_R contributes no
- * special PTE but is tracked for clarity.
- *
- * @param __Pf__ ELF p_flags bitfield.
- *
- * @return VMM page flags suitable for MapPage.
- */
 static inline uint64_t
 ElfPfToVmmFlags(uint32_t __Pf__)
 {
@@ -97,15 +82,6 @@ ElfPfToVmmFlags(uint32_t __Pf__)
     return Flags;
 }
 
-/**
- * @brief Read exactly a given number of bytes from a file.
- *
- * @param __File__ File handle.
- * @param __Buf__ Destination buffer.
- * @param __Len__ Number of bytes to read.
- *
- * @return 0 on success, -1 on failure or short read.
- */
 static int
 ReadExact(File* __File__, void* __Buf__, long __Len__)
 {
@@ -118,13 +94,6 @@ ReadExact(File* __File__, void* __Buf__, long __Len__)
     return 0;
 }
 
-/**
- * @brief Validate ELF64 header for x86_64 ET_EXEC/ET_DYN.
- *
- * @param __Eh__ ELF header pointer.
- *
- * @return 0 if valid, -1 otherwise.
- */
 static int
 ElfValidateHeader(const Elf64Ehdr* __Eh__)
 {
@@ -167,17 +136,6 @@ ElfValidateHeader(const Elf64Ehdr* __Eh__)
     return 0;
 }
 
-/**
- * @brief Compute load base for ET_DYN respecting maximum p_align and page alignment.
- *
- * For ET_EXEC returns 0. For ET_DYN, returns a page-aligned base (UserVirtualBase).
- *
- * @param __Eh__ ELF header pointer.
- * @param __Phdrs__ Program headers buffer.
- * @param __Phnum__ Number of program headers.
- *
- * @return Load base address.
- */
 static uint64_t
 ElfComputeLoadBase(const Elf64Ehdr* __Eh__, const Elf64Phdr* __Phdrs__, uint16_t __Phnum__)
 {
@@ -205,25 +163,6 @@ ElfComputeLoadBase(const Elf64Ehdr* __Eh__, const Elf64Phdr* __Phdrs__, uint16_t
     return Base;
 }
 
-/**
- * @brief Map PT_LOAD page clamping of file and mem subranges, flags.
- *
- * @details For each page covering [PageVa, PageVa+PageSize):
- * 			data_start_in_page = max(0, SegVaddr - PageVa)
- * 			data_end_in_page   = min(PageSize, (SegVaddr + SegFilesz) - PageVa)
- * 			mem_end_in_page    = min(PageSize, (SegVaddr + SegMemsz) - PageVa)
- * 			Then copy file bytes for [data_start_in_page, data_end_in_page) and zero
- * 			the remainder up to mem_end_in_page. Anything beyond mem_end_in_page is untouched.
- *
- *			This handles all p_aligns and misalignments without relying on global deltas.
- *
- * @param __Space__ Main Virtual Space
- * @param __File__ Main ELF File (For Seek)
- * @param __Ph__ PHDS header
- * @param __LoadBase__ Base for load
- *
- * @return 0 if valid, -1 otherwise.
- */
 static int
 ElfMapLoadSegment(VirtualMemorySpace* __Space__,
                   File*               __File__,
@@ -358,17 +297,6 @@ ElfMapLoadSegment(VirtualMemorySpace* __Space__,
     return 0;
 }
 
-/**
- * @brief Map all PT_LOAD segments from an array of program headers (ET_EXEC/ET_DYN aware).
- *
- * @param __Space__ Target address space.
- * @param __File__ ELF file handle.
- * @param __Phdrs__ Program headers buffer.
- * @param __Phnum__ Number of program headers.
- * @param __LoadBase__ Load base to add to p_vaddr.
- *
- * @return 0 on success, -1 on failure.
- */
 int
 ElfMapLoadSegments(VirtualMemorySpace* __Space__,
                    File*               __File__,
@@ -395,27 +323,6 @@ ElfMapLoadSegments(VirtualMemorySpace* __Space__,
     return 0;
 }
 
-/**
- * @brief Build initial user stack with argc/argv/envp and packed strings, handling zero-argc/envp
- * safely.
- *
- * @details Layout at final RSP (lowest address first):
- *   	[argc]
- *   	[argv pointers ...] [NULL]
- *   	[envp pointers ...] [NULL]
- * 		Above that, at higher addresses within mapped stack pages, the strings are packed top-down.
- *
- * @details The pointer block is carved directly below the final strings cursor, ensuring it lies
- * 			within mapped pages (between LowerVa and UpperVa). A single guard page below the stack
- * 			remains unmapped.
- *
- * @param __Space__ Target address space.
- * @param __Argv__ NULL-terminated argv vector (may be NULL).
- * @param __Envp__ NULL-terminated envp vector (may be NULL).
- * @param __StackExecutable__ 1 to allow executable stack, 0 to mark NX.
- *
- * @return New user-mode RSP or 0 on failure.
- */
 uint64_t
 ElfSetupUserStack(VirtualMemorySpace* __Space__,
                   const char* const*  __Argv__,
@@ -701,18 +608,6 @@ ElfSetupUserStack(VirtualMemorySpace* __Space__,
     return ArgcVa;
 }
 
-/**
- * @brief Load ELF64 (ET_EXEC or ET_DYN): validate header, map segments, handle PT_GNU_STACK, build
- * stack, produce image.
- *
- * @param __Proc__ Process pointer.
- * @param __Path__ Path to ELF binary.
- * @param __Argv__ argv vector.
- * @param __Envp__ envp vector.
- * @param __OutImage__ Output image (entry, stack, space).
- *
- * @return 0 on success, -1 on failure.
- */
 int
 ElfLoadExec(Process*           __Proc__,
             const char*        __Path__,
@@ -848,17 +743,6 @@ ElfLoadExec(Process*           __Proc__,
     return 0;
 }
 
-/**
- * @brief Replace current process image with the loaded ELF program, set thread context, switch
- * space, enqueue.
- *
- * @param __Proc__ Process pointer.
- * @param __Path__ Path to ELF binary.
- * @param __Argv__ Argument vector (NULL-terminated).
- * @param __Envp__ Environment vector (NULL-terminated).
- *
- * @return 0 on success, -1 on failure.
- */
 int
 ProcExecve(Process*           __Proc__,
            const char*        __Path__,

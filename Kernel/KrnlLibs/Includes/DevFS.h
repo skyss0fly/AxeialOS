@@ -6,11 +6,6 @@
 #include <String.h>
 #include <VFS.h>
 
-/**
- * Structures
- */
-
-/** Device type */
 typedef enum DevType
 {
     DevChar,
@@ -18,7 +13,6 @@ typedef enum DevType
 
 } DevType;
 
-/** Character device ops */
 typedef struct CharDevOps
 {
     int (*Open)(void* __DevCtx__);
@@ -29,7 +23,6 @@ typedef struct CharDevOps
 
 } CharDevOps;
 
-/** Block device ops */
 typedef struct BlockDevOps
 {
     int (*Open)(void* __DevCtx__);
@@ -41,7 +34,6 @@ typedef struct BlockDevOps
 
 } BlockDevOps;
 
-/** Registry entry for a device */
 typedef struct DeviceEntry
 {
     const char* Name;    /* "null", "zero", "tty0", "sda" */
@@ -58,7 +50,6 @@ typedef struct DeviceEntry
 
 } DeviceEntry;
 
-/** File-private context for DevFS handles */
 typedef struct DevFsFileCtx
 {
     const DeviceEntry* Dev;    /* bound device entry */
@@ -67,9 +58,6 @@ typedef struct DevFsFileCtx
 
 } DevFsFileCtx;
 
-/**
- * Functions
- */
 int         DevFsInit(void);
 int         DevFsRegister(void);
 Superblock* DevFsMountImpl(const char* __Dev__, const char* __Opts__);
@@ -86,9 +74,6 @@ int         DevFsRegisterBlockDevice(const char* __Name__,
 int         DevFsUnregisterDevice(const char* __Name__);
 int         DevFsRegisterSeedDevices(void);
 
-/**
- * Public
- */
 KEXPORT(DevFsRegisterCharDevice);
 KEXPORT(DevFsRegisterBlockDevice);
 KEXPORT(DevFsUnregisterDevice);

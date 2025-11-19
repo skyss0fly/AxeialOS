@@ -160,16 +160,6 @@ __find_mount__(const char* __Path__)
     return Best >= 0 ? &__Mounts__[Best] : 0;
 }
 
-/**
- * @brief Initialize the Virtual File System layer
- *
- * Sets up the VFS subsystem by resetting all internal state variables,
- * clearing filesystem registrations, mount tables, and root filesystem
- * references. This function should be called early during kernel
- * initialization.
- *
- * @return 0 on success (always succeeds)
- */
 int
 VfsInit(void)
 {
@@ -191,15 +181,6 @@ VfsInit(void)
     return 0;
 }
 
-/**
- * @brief Shutdown the Virtual File System layer
- *
- * Cleans up all mounted filesystems by calling their unmount and release
- * operations, then resets all VFS state. This function should be called
- * during kernel shutdown to ensure proper cleanup.
- *
- * @return 0 on success (always succeeds)
- */
 int
 VfsShutdown(void)
 {
@@ -227,16 +208,6 @@ VfsShutdown(void)
     return 0;
 }
 
-/**
- * @brief Register a filesystem type with the VFS
- *
- * Adds a new filesystem type to the VFS registry, allowing it to be
- * mounted later. The filesystem type must provide a valid name and
- * mount function.
- *
- * @param __FsType__ Pointer to the filesystem type structure
- * @return 0 on success, -1 on failure (invalid parameters or registry full)
- */
 int
 VfsRegisterFs(const FsType* __FsType__)
 {
@@ -268,15 +239,6 @@ VfsRegisterFs(const FsType* __FsType__)
     return 0;
 }
 
-/**
- * @brief Unregister a filesystem type from the VFS
- *
- * Removes a filesystem type from the VFS registry, preventing new
- * mounts of that type. Existing mounts are not affected.
- *
- * @param __Name__ Name of the filesystem type to unregister
- * @return 0 on success, -1 if filesystem not found
- */
 int
 VfsUnregisterFs(const char* __Name__)
 {
@@ -306,14 +268,6 @@ VfsUnregisterFs(const char* __Name__)
     return -1;
 }
 
-/**
- * @brief Find a registered filesystem type by name
- *
- * Searches the VFS registry for a filesystem type with the given name.
- *
- * @param __Name__ Name of the filesystem type to find
- * @return Pointer to the filesystem type structure, or NULL if not found
- */
 const FsType*
 VfsFindFs(const char* __Name__)
 {
@@ -333,16 +287,6 @@ VfsFindFs(const char* __Name__)
     return 0;
 }
 
-/**
- * @brief List all registered filesystem types
- *
- * Fills the provided array with names of all registered filesystem types,
- * up to the specified capacity.
- *
- * @param __Out__ Array to store filesystem names
- * @param __Cap__ Maximum number of names to store
- * @return Number of filesystem types stored in the array
- */
 long
 VfsListFs(const char** __Out__, long __Cap__)
 {
@@ -362,20 +306,6 @@ VfsListFs(const char** __Out__, long __Cap__)
     return N;
 }
 
-/**
- * @brief Mount a filesystem at the specified path
- *
- * Mounts a filesystem of the given type at the specified mount point.
- * The filesystem driver is looked up by type name and its mount function
- * is called to create the superblock.
- *
- * @param __Dev__ Device identifier (may be NULL for some filesystems)
- * @param __Path__ Mount point path in the VFS namespace
- * @param __Type__ Filesystem type name (e.g., "ramfs", "ext2")
- * @param __Flags__ Mount flags (currently unused)
- * @param __Opts__ Mount options string (passed to filesystem driver)
- * @return Pointer to the mounted superblock, or NULL on failure
- */
 Superblock*
 VfsMount(const char* __Dev__,
          const char* __Path__,
@@ -434,15 +364,6 @@ VfsMount(const char* __Dev__,
     return Sb;
 }
 
-/**
- * @brief Unmount a filesystem from the specified path
- *
- * Unmounts the filesystem mounted at the given path, calling the
- * filesystem's unmount and release operations to clean up resources.
- *
- * @param __Path__ Mount point path to unmount
- * @return 0 on success, -1 if mount point not found
- */
 int
 VfsUnmount(const char* __Path__)
 {
@@ -488,16 +409,6 @@ VfsUnmount(const char* __Path__)
     return -1;
 }
 
-/**
- * @brief Switch the root filesystem to a new path
- *
- * Changes the root filesystem reference to point to the filesystem
- * containing the specified path. This effectively changes the "/"
- * mount point.
- *
- * @param __NewRoot__ Path to the new root directory
- * @return 0 on success, -1 on failure (path not found or invalid)
- */
 int
 VfsSwitchRoot(const char* __NewRoot__)
 {
@@ -522,17 +433,6 @@ VfsSwitchRoot(const char* __NewRoot__)
     return 0;
 }
 
-/**
- * @brief Create a bind mount (not implemented)
- *
- * This function is a placeholder for bind mount functionality, which
- * allows mounting an existing directory at another location in the
- * filesystem tree.
- *
- * @param __Src__ Source path to bind mount
- * @param __Dst__ Destination path for the bind mount
- * @return -1 (not implemented)
- */
 int
 VfsBindMount(const char* __Src__, const char* __Dst__)
 {
@@ -568,16 +468,6 @@ VfsBindMount(const char* __Src__, const char* __Dst__)
     return 0;
 }
 
-/**
- * @brief Move a mount point
- *
- * This function is for move mount functionality, which
- * allows relocating an existing mount point to a new location.
- *
- * @param __Src__ Current mount point path
- * @param __Dst__ New mount point path
- * @return 0 on OK and -1 on Error
- */
 int
 VfsMoveMount(const char* __Src__, const char* __Dst__)
 {
@@ -605,17 +495,6 @@ VfsMoveMount(const char* __Src__, const char* __Dst__)
     return 0;
 }
 
-/**
- * @brief Remount a filesystem with new options (stub implementation)
- *
- * Attempts to remount the filesystem at the given path with new flags
- * and options. Currently only checks if the mount exists.
- *
- * @param __Path__ Mount point path
- * @param __Flags__ New mount flags (unused)
- * @param __Opts__ New mount options (unused)
- * @return 0 if mount exists, -1 if not found
- */
 int
 VfsRemount(const char* __Path__, long __Flags__, const char* __Opts__)
 {
@@ -631,16 +510,6 @@ VfsRemount(const char* __Path__, long __Flags__, const char* __Opts__)
     return 0;
 }
 
-/**
- * @brief Resolve a path to a dentry
- *
- * Converts a path string to a dentry structure by walking the filesystem
- * tree. Handles absolute and relative paths, and considers mounted
- * filesystems.
- *
- * @param __Path__ Path to resolve
- * @return Pointer to resolved dentry, or NULL on failure
- */
 Dentry*
 VfsResolve(const char* __Path__)
 {
@@ -698,16 +567,6 @@ VfsResolve(const char* __Path__)
     return __walk__(M->Sb->Root, __RootDe__, Tail);
 }
 
-/**
- * @brief Resolve a relative path from a base dentry
- *
- * Resolves a relative path starting from the given base dentry.
- * Handles absolute paths by delegating to VfsResolve.
- *
- * @param __Base__ Base dentry to start resolution from
- * @param __Rel__ Relative path to resolve
- * @return Pointer to resolved dentry, or NULL on failure
- */
 Dentry*
 VfsResolveAt(Dentry* __Base__, const char* __Rel__)
 {
@@ -731,16 +590,6 @@ VfsResolveAt(Dentry* __Base__, const char* __Rel__)
     return __walk__(__Base__->Node, __Base__, __Rel__);
 }
 
-/**
- * @brief Look up a child vnode by name from a base dentry
- *
- * Searches for a child vnode with the given name in the directory
- * represented by the base dentry.
- *
- * @param __Base__ Base dentry to search in
- * @param __Name__ Name of the child to look up
- * @return Pointer to the found vnode, or NULL if not found
- */
 Vnode*
 VfsLookup(Dentry* __Base__, const char* __Name__)
 {
@@ -759,16 +608,6 @@ VfsLookup(Dentry* __Base__, const char* __Name__)
     return __Base__->Node->Ops->Lookup(__Base__->Node, __Name__);
 }
 
-/**
- * @brief Create parent directories for a path
- *
- * Ensures that all parent directories for the given path exist.
- * Currently only checks if the path resolves.
- *
- * @param __Path__ Path for which to create parent directories
- * @param __Perm__ Permissions for created directories (unused)
- * @return 0 if path exists, -1 if not found
- */
 int
 VfsMkpath(const char* __Path__, long __Perm__)
 {
@@ -827,17 +666,6 @@ VfsMkpath(const char* __Path__, long __Perm__)
     return 0;
 }
 
-/**
- * @brief Resolve a path to its canonical form
- *
- * Converts a path to its canonical absolute form, resolving any
- * symbolic links and relative components.
- *
- * @param __Path__ Path to canonicalize
- * @param __Buf__ Buffer to store the canonical path
- * @param __Len__ Size of the buffer
- * @return 0 on success, -1 on failure
- */
 int
 VfsRealpath(const char* __Path__, char* __Buf__, long __Len__)
 {
@@ -857,16 +685,6 @@ VfsRealpath(const char* __Path__, char* __Buf__, long __Len__)
     return 0;
 }
 
-/**
- * @brief Open a file for reading/writing
- *
- * Opens a file at the specified path with the given flags, creating
- * a File structure for subsequent operations.
- *
- * @param __Path__ Path to the file to open
- * @param __Flags__ Open flags (e.g., read-only, write-only, create)
- * @return Pointer to the opened File structure, or NULL on failure
- */
 File*
 VfsOpen(const char* __Path__, long __Flags__)
 {
@@ -908,17 +726,6 @@ VfsOpen(const char* __Path__, long __Flags__)
     return F;
 }
 
-/**
- * @brief Open a file relative to a base dentry
- *
- * Opens a file at a path relative to the given base dentry with the
- * specified flags, creating a File structure for subsequent operations.
- *
- * @param __Base__ Base dentry to resolve the relative path from
- * @param __Rel__ Relative path to the file to open
- * @param __Flags__ Open flags (e.g., read-only, write-only, create)
- * @return Pointer to the opened File structure, or NULL on failure
- */
 File*
 VfsOpenAt(Dentry* __Base__, const char* __Rel__, long __Flags__)
 {
@@ -956,15 +763,6 @@ VfsOpenAt(Dentry* __Base__, const char* __Rel__, long __Flags__)
     return F;
 }
 
-/**
- * @brief Close an open file
- *
- * Closes the specified file, releasing associated resources and
- * calling the filesystem's close operation if available.
- *
- * @param __File__ Pointer to the File structure to close
- * @return 0 on success, -1 on failure
- */
 int
 VfsClose(File* __File__)
 {
@@ -984,17 +782,6 @@ VfsClose(File* __File__)
     return 0;
 }
 
-/**
- * @brief Read data from an open file
- *
- * Reads up to __Len__ bytes from the file into the provided buffer,
- * updating the file's offset.
- *
- * @param __File__ Pointer to the open File structure
- * @param __Buf__ Buffer to store the read data
- * @param __Len__ Maximum number of bytes to read
- * @return Number of bytes read, or -1 on failure
- */
 long
 VfsRead(File* __File__, void* __Buf__, long __Len__)
 {
@@ -1018,17 +805,6 @@ VfsRead(File* __File__, void* __Buf__, long __Len__)
     return Got;
 }
 
-/**
- * @brief Write data to an open file
- *
- * Writes up to __Len__ bytes from the buffer to the file,
- * updating the file's offset.
- *
- * @param __File__ Pointer to the open File structure
- * @param __Buf__ Buffer containing the data to write
- * @param __Len__ Number of bytes to write
- * @return Number of bytes written, or -1 on failure
- */
 long
 VfsWrite(File* __File__, const void* __Buf__, long __Len__)
 {
@@ -1052,17 +828,6 @@ VfsWrite(File* __File__, const void* __Buf__, long __Len__)
     return Put;
 }
 
-/**
- * @brief Seek to a position in an open file
- *
- * Changes the file offset based on the specified offset and whence
- * parameter (SEEK_SET, SEEK_CUR, SEEK_END).
- *
- * @param __File__ Pointer to the open File structure
- * @param __Off__ Offset value
- * @param __Whence__ Reference point for the offset
- * @return New file offset, or -1 on failure
- */
 long
 VfsLseek(File* __File__, long __Off__, int __Whence__)
 {
@@ -1086,17 +851,6 @@ VfsLseek(File* __File__, long __Off__, int __Whence__)
     return New;
 }
 
-/**
- * @brief Perform an I/O control operation on an open file
- *
- * Sends a control command to the file's underlying filesystem driver,
- * potentially with additional arguments.
- *
- * @param __File__ Pointer to the open File structure
- * @param __Cmd__ I/O control command
- * @param __Arg__ Pointer to command arguments (may be NULL)
- * @return 0 on success, -1 on failure
- */
 int
 VfsIoctl(File* __File__, unsigned long __Cmd__, void* __Arg__)
 {
@@ -1115,15 +869,6 @@ VfsIoctl(File* __File__, unsigned long __Cmd__, void* __Arg__)
     return __File__->Node->Ops->Ioctl(__File__, __Cmd__, __Arg__);
 }
 
-/**
- * @brief Synchronize file data to storage
- *
- * Forces any pending writes to the file to be written to the underlying
- * storage device.
- *
- * @param __File__ Pointer to the open File structure
- * @return 0 on success, -1 on failure
- */
 int
 VfsFsync(File* __File__)
 {
@@ -1142,16 +887,6 @@ VfsFsync(File* __File__)
     return __File__->Node->Ops->Sync(__File__->Node);
 }
 
-/**
- * @brief Get file status information
- *
- * Retrieves status information about the file, such as size, permissions,
- * and timestamps, storing it in the provided buffer.
- *
- * @param __File__ Pointer to the open File structure
- * @param __Buf__ Buffer to store the file status
- * @return 0 on success, -1 on failure
- */
 int
 VfsFstats(File* __File__, VfsStat* __Buf__)
 {
@@ -1170,16 +905,6 @@ VfsFstats(File* __File__, VfsStat* __Buf__)
     return __File__->Node->Ops->Stat(__File__->Node, __Buf__);
 }
 
-/**
- * @brief Get file status information by path
- *
- * Retrieves status information about the file at the specified path,
- * storing it in the provided buffer.
- *
- * @param __Path__ Path to the file
- * @param __Buf__ Buffer to store the file status
- * @return 0 on success, -1 on failure
- */
 int
 VfsStats(const char* __Path__, VfsStat* __Buf__)
 {
@@ -1204,17 +929,6 @@ VfsStats(const char* __Path__, VfsStat* __Buf__)
     return De->Node->Ops->Stat(De->Node, __Buf__);
 }
 
-/**
- * @brief Read directory entries
- *
- * Reads directory entries from the specified path into the provided buffer.
- * The format of the entries depends on the filesystem implementation.
- *
- * @param __Path__ Path to the directory
- * @param __Buf__ Buffer to store directory entries
- * @param __BufLen__ Size of the buffer
- * @return Number of bytes written to buffer, or -1 on failure
- */
 long
 VfsReaddir(const char* __Path__, void* __Buf__, long __BufLen__)
 {
@@ -1239,17 +953,6 @@ VfsReaddir(const char* __Path__, void* __Buf__, long __BufLen__)
     return De->Node->Ops->Readdir(De->Node, __Buf__, __BufLen__);
 }
 
-/**
- * @brief Read directory entries from an open file
- *
- * Reads directory entries from an open directory file into the provided buffer.
- * The file must be opened for reading.
- *
- * @param __Dir__ Pointer to the open directory File structure
- * @param __Buf__ Buffer to store directory entries
- * @param __BufLen__ Size of the buffer
- * @return Number of bytes written to buffer, or -1 on failure
- */
 long
 VfsReaddirF(File* __Dir__, void* __Buf__, long __BufLen__)
 {
@@ -1268,17 +971,6 @@ VfsReaddirF(File* __Dir__, void* __Buf__, long __BufLen__)
     return __Dir__->Node->Ops->Readdir(__Dir__->Node, __Buf__, __BufLen__);
 }
 
-/**
- * @brief Create a new file
- *
- * Creates a new file at the specified path with the given flags and permissions.
- * The parent directory must exist.
- *
- * @param __Path__ Path where the file should be created
- * @param __Flags__ Creation flags (e.g., exclusive creation)
- * @param __Perm__ Permissions for the new file
- * @return 0 on success, -1 on failure
- */
 int
 VfsCreate(const char* __Path__, long __Flags__, VfsPerm __Perm__)
 {
@@ -1343,15 +1035,6 @@ VfsCreate(const char* __Path__, long __Flags__, VfsPerm __Perm__)
     return Parent->Node->Ops->Create(Parent->Node, Name, __Flags__, __Perm__);
 }
 
-/**
- * @brief Remove a file or symbolic link
- *
- * Removes the file or symbolic link at the specified path.
- * The file must not be currently open.
- *
- * @param __Path__ Path to the file to remove
- * @return 0 on success, -1 on failure
- */
 int
 VfsUnlink(const char* __Path__)
 {
@@ -1416,16 +1099,6 @@ VfsUnlink(const char* __Path__)
     return Base->Node->Ops->Unlink(Base->Node, Name);
 }
 
-/**
- * @brief Create a directory
- *
- * Creates a new directory at the specified path with the given permissions.
- * Parent directories must exist.
- *
- * @param __Path__ Path where the directory should be created
- * @param __Perm__ Permissions for the new directory
- * @return 0 on success, -1 on failure
- */
 int
 VfsMkdir(const char* __Path__, VfsPerm __Perm__)
 {
@@ -1496,14 +1169,6 @@ VfsMkdir(const char* __Path__, VfsPerm __Perm__)
     return Base->Node->Ops->Mkdir(Base->Node, Name, __Perm__);
 }
 
-/**
- * @brief Remove a directory
- *
- * Removes the directory at the specified path. The directory must be empty.
- *
- * @param __Path__ Path to the directory to remove
- * @return 0 on success, -1 on failure
- */
 int
 VfsRmdir(const char* __Path__)
 {
@@ -1560,17 +1225,6 @@ VfsRmdir(const char* __Path__)
     return Base->Node->Ops->Rmdir(Base->Node, Name);
 }
 
-/**
- * @brief Create a symbolic link
- *
- * Creates a symbolic link at __LinkPath__ pointing to __Target__ with
- * the specified permissions.
- *
- * @param __Target__ Path that the symbolic link should point to
- * @param __LinkPath__ Path where the symbolic link should be created
- * @param __Perm__ Permissions for the symbolic link
- * @return 0 on success, -1 on failure
- */
 int
 VfsSymlink(const char* __Target__, const char* __LinkPath__, VfsPerm __Perm__)
 {
@@ -1635,17 +1289,6 @@ VfsSymlink(const char* __Target__, const char* __LinkPath__, VfsPerm __Perm__)
     return Base->Node->Ops->Symlink(Base->Node, Name, __Target__, __Perm__);
 }
 
-/**
- * @brief Read the target of a symbolic link
- *
- * Reads the target path that the symbolic link at __Path__ points to,
- * storing it in the provided buffer.
- *
- * @param __Path__ Path to the symbolic link
- * @param __Buf__ Buffer to store the target path
- * @param __Len__ Size of the buffer
- * @return 0 on success, -1 on failure
- */
 int
 VfsReadlink(const char* __Path__, char* __Buf__, long __Len__)
 {
@@ -1672,15 +1315,6 @@ VfsReadlink(const char* __Path__, char* __Buf__, long __Len__)
     return De->Node->Ops->Readlink(De->Node, &NB);
 }
 
-/**
- * @brief Create a hard link
- *
- * Creates a hard link at __NewPath__ pointing to the same inode as __OldPath__.
- *
- * @param __OldPath__ Path to the existing file
- * @param __NewPath__ Path where the hard link should be created
- * @return 0 on success, -1 on failure
- */
 int
 VfsLink(const char* __OldPath__, const char* __NewPath__)
 {
@@ -1754,17 +1388,6 @@ VfsLink(const char* __OldPath__, const char* __NewPath__)
     return NewBase->Node->Ops->Link(NewBase->Node, OldDe->Node, Name);
 }
 
-/**
- * @brief Rename or move a file or directory
- *
- * Renames or moves the file or directory from __OldPath__ to __NewPath__.
- * If __NewPath__ exists, it may be overwritten depending on __Flags__.
- *
- * @param __OldPath__ Current path of the file/directory
- * @param __NewPath__ New path for the file/directory
- * @param __Flags__ Rename flags (e.g., no overwrite)
- * @return 0 on success, -1 on failure
- */
 int
 VfsRename(const char* __OldPath__, const char* __NewPath__, long __Flags__)
 {
@@ -1889,15 +1512,6 @@ VfsRename(const char* __OldPath__, const char* __NewPath__, long __Flags__)
     return OldBase->Node->Ops->Rename(OldBase->Node, OldName, NewBase->Node, NewName, __Flags__);
 }
 
-/**
- * @brief Change file permissions
- *
- * Changes the permissions (mode) of the file or directory at __Path__.
- *
- * @param __Path__ Path to the file/directory
- * @param __Mode__ New permissions mode
- * @return 0 on success, -1 on failure
- */
 int
 VfsChmod(const char* __Path__, long __Mode__)
 {
@@ -1915,16 +1529,6 @@ VfsChmod(const char* __Path__, long __Mode__)
     return De->Node->Ops->Chmod(De->Node, __Mode__);
 }
 
-/**
- * @brief Change file ownership
- *
- * Changes the owner (UID) and group (GID) of the file or directory at __Path__.
- *
- * @param __Path__ Path to the file/directory
- * @param __Uid__ New user ID (owner)
- * @param __Gid__ New group ID
- * @return 0 on success, -1 on failure
- */
 int
 VfsChown(const char* __Path__, long __Uid__, long __Gid__)
 {
@@ -1942,17 +1546,6 @@ VfsChown(const char* __Path__, long __Uid__, long __Gid__)
     return De->Node->Ops->Chown(De->Node, __Uid__, __Gid__);
 }
 
-/**
- * @brief Truncate a file to a specified length
- *
- * Changes the size of the file at __Path__ to __Len__ bytes. If __Len__
- * is smaller than the current size, data is lost. If larger, the file
- * is extended (usually with zeros).
- *
- * @param __Path__ Path to the file
- * @param __Len__ New length of the file
- * @return 0 on success, -1 on failure
- */
 int
 VfsTruncate(const char* __Path__, long __Len__)
 {
@@ -1970,15 +1563,6 @@ VfsTruncate(const char* __Path__, long __Len__)
     return De->Node->Ops->Truncate(De->Node, __Len__);
 }
 
-/**
- * @brief Increment vnode reference count
- *
- * Increases the reference count of the vnode, indicating that another
- * component is using it.
- *
- * @param __Node__ Pointer to the vnode
- * @return New reference count, or -1 on failure
- */
 int
 VnodeRefInc(Vnode* __Node__)
 {
@@ -1992,15 +1576,6 @@ VnodeRefInc(Vnode* __Node__)
     return (int)__Node__->Refcnt;
 }
 
-/**
- * @brief Decrement vnode reference count
- *
- * Decreases the reference count of the vnode. When it reaches zero,
- * the vnode may be freed.
- *
- * @param __Node__ Pointer to the vnode
- * @return New reference count, or -1 on failure
- */
 int
 VnodeRefDec(Vnode* __Node__)
 {
@@ -2017,16 +1592,6 @@ VnodeRefDec(Vnode* __Node__)
     return (int)__Node__->Refcnt;
 }
 
-/**
- * @brief Get vnode attributes
- *
- * Retrieves attributes of the vnode, such as size and timestamps,
- * storing them in the provided buffer.
- *
- * @param __Node__ Pointer to the vnode
- * @param __Buf__ Buffer to store the attributes
- * @return 0 on success, -1 on failure
- */
 int
 VnodeGetAttr(Vnode* __Node__, VfsStat* __Buf__)
 {
@@ -2043,16 +1608,6 @@ VnodeGetAttr(Vnode* __Node__, VfsStat* __Buf__)
     return __Node__->Ops->Stat(__Node__, __Buf__);
 }
 
-/**
- * @brief Set vnode attributes (stub)
- *
- * Sets attributes of the vnode from the provided buffer.
- * Currently not implemented.
- *
- * @param __Node__ Pointer to the vnode
- * @param __Buf__ Buffer containing the new attributes
- * @return -1 (not implemented)
- */
 int
 VnodeSetAttr(Vnode* __Node__, const VfsStat* __Buf__)
 {
@@ -2063,15 +1618,6 @@ VnodeSetAttr(Vnode* __Node__, const VfsStat* __Buf__)
     return -1;
 }
 
-/**
- * @brief Invalidate a dentry
- *
- * Marks the dentry as invalid, indicating that its cached information
- * may no longer be accurate.
- *
- * @param __De__ Pointer to the dentry to invalidate
- * @return 0 on success, -1 on failure
- */
 int
 DentryInvalidate(Dentry* __De__)
 {
@@ -2085,14 +1631,6 @@ DentryInvalidate(Dentry* __De__)
     return 0;
 }
 
-/**
- * @brief Revalidate a dentry
- *
- * Clears the invalid flag on the dentry, allowing it to be used again.
- *
- * @param __De__ Pointer to the dentry to revalidate
- * @return 0 on success, -1 on failure
- */
 int
 DentryRevalidate(Dentry* __De__)
 {
@@ -2106,15 +1644,6 @@ DentryRevalidate(Dentry* __De__)
     return 0;
 }
 
-/**
- * @brief Attach a vnode to a dentry
- *
- * Associates the given vnode with the dentry.
- *
- * @param __De__ Pointer to the dentry
- * @param __Node__ Pointer to the vnode to attach
- * @return 0 on success, -1 on failure
- */
 int
 DentryAttach(Dentry* __De__, Vnode* __Node__)
 {
@@ -2128,14 +1657,6 @@ DentryAttach(Dentry* __De__, Vnode* __Node__)
     return 0;
 }
 
-/**
- * @brief Detach vnode from a dentry
- *
- * Removes the association between the vnode and the dentry.
- *
- * @param __De__ Pointer to the dentry
- * @return 0 on success, -1 on failure
- */
 int
 DentryDetach(Dentry* __De__)
 {
@@ -2149,16 +1670,6 @@ DentryDetach(Dentry* __De__)
     return 0;
 }
 
-/**
- * @brief Get the name of a dentry
- *
- * Copies the name of the dentry into the provided buffer.
- *
- * @param __De__ Pointer to the dentry
- * @param __Buf__ Buffer to store the name
- * @param __Len__ Size of the buffer
- * @return 0 on success, -1 on failure
- */
 int
 DentryName(Dentry* __De__, char* __Buf__, long __Len__)
 {
@@ -2177,15 +1688,6 @@ DentryName(Dentry* __De__, char* __Buf__, long __Len__)
     return 0;
 }
 
-/**
- * @brief Set current working directory (stub)
- *
- * Sets the current working directory to the specified path.
- * Currently not implemented.
- *
- * @param __Path__ Path to set as current working directory
- * @return 0 (stub implementation)
- */
 int
 VfsSetCwd(const char* __Path__)
 {
@@ -2195,16 +1697,6 @@ VfsSetCwd(const char* __Path__)
     return 0;
 }
 
-/**
- * @brief Get current working directory
- *
- * Retrieves the current working directory path, storing it in the buffer.
- * Currently returns "/".
- *
- * @param __Buf__ Buffer to store the path
- * @param __Len__ Size of the buffer
- * @return 0 on success, -1 on failure
- */
 int
 VfsGetCwd(char* __Buf__, long __Len__)
 {
@@ -2224,14 +1716,6 @@ VfsGetCwd(char* __Buf__, long __Len__)
     return 0;
 }
 
-/**
- * @brief Set the root filesystem
- *
- * Changes the root filesystem to the filesystem containing the specified path.
- *
- * @param __Path__ Path to the new root directory
- * @return 0 on success, -1 on failure
- */
 int
 VfsSetRoot(const char* __Path__)
 {
@@ -2240,16 +1724,6 @@ VfsSetRoot(const char* __Path__)
     return VfsSwitchRoot(__Path__);
 }
 
-/**
- * @brief Get the root filesystem path
- *
- * Retrieves the current root filesystem path, storing it in the buffer.
- * Currently returns "/".
- *
- * @param __Buf__ Buffer to store the path
- * @param __Len__ Size of the buffer
- * @return 0 on success, -1 on failure
- */
 int
 VfsGetRoot(char* __Buf__, long __Len__)
 {
@@ -2269,14 +1743,6 @@ VfsGetRoot(char* __Buf__, long __Len__)
     return 0;
 }
 
-/**
- * @brief Set the umask value
- *
- * Sets the umask value used for creating new files and directories.
- *
- * @param __Mode__ New umask value
- * @return 0 on success
- */
 int
 VfsSetUmask(long __Mode__)
 {
@@ -2286,13 +1752,6 @@ VfsSetUmask(long __Mode__)
     return 0;
 }
 
-/**
- * @brief Get the current umask value
- *
- * Returns the current umask value used for file and directory creation.
- *
- * @return Current umask value
- */
 long
 VfsGetUmask(void)
 {
@@ -2301,16 +1760,6 @@ VfsGetUmask(void)
     return __Umask__;
 }
 
-/**
- * @brief Subscribe to filesystem notifications (stub)
- *
- * Subscribes to filesystem change notifications for the specified path
- * with the given event mask. Currently not implemented.
- *
- * @param __Path__ Path to monitor for changes
- * @param __Mask__ Bitmask of events to monitor (e.g., file creation, deletion)
- * @return 0 (stub implementation)
- */
 int
 VfsNotifySubscribe(const char* __Path__, long __Mask__)
 {
@@ -2321,15 +1770,6 @@ VfsNotifySubscribe(const char* __Path__, long __Mask__)
     return 0;
 }
 
-/**
- * @brief Unsubscribe from filesystem notifications (stub)
- *
- * Removes the subscription for filesystem notifications on the specified path.
- * Currently not implemented.
- *
- * @param __Path__ Path to stop monitoring
- * @return 0 (stub implementation)
- */
 int
 VfsNotifyUnsubscribe(const char* __Path__)
 {
@@ -2339,16 +1779,6 @@ VfsNotifyUnsubscribe(const char* __Path__)
     return 0;
 }
 
-/**
- * @brief Poll for filesystem notifications (stub)
- *
- * Checks for pending filesystem notifications on the specified path,
- * storing the event mask in the output parameter. Currently not implemented.
- *
- * @param __Path__ Path to check for notifications
- * @param __OutMask__ Pointer to store the event mask
- * @return 0 (stub implementation)
- */
 int
 VfsNotifyPoll(const char* __Path__, long* __OutMask__)
 {
@@ -2363,17 +1793,6 @@ VfsNotifyPoll(const char* __Path__, long* __OutMask__)
     return 0;
 }
 
-/**
- * @brief Check access permissions for a path (stub)
- *
- * Checks if the current process has the specified access permissions
- * for the file or directory at the given path. Currently only checks
- * if the path exists.
- *
- * @param __Path__ Path to check access for
- * @param __Mode__ Access mode flags (read, write, execute)
- * @return 0 if accessible, -1 if not found or access denied
- */
 int
 VfsAccess(const char* __Path__, long __Mode__)
 {
@@ -2384,14 +1803,6 @@ VfsAccess(const char* __Path__, long __Mode__)
     return De ? 0 : -1;
 }
 
-/**
- * @brief Check if a path exists
- *
- * Determines whether the specified path exists in the filesystem.
- *
- * @param __Path__ Path to check for existence
- * @return 1 if exists, 0 if not found
- */
 int
 VfsExists(const char* __Path__)
 {
@@ -2401,14 +1812,6 @@ VfsExists(const char* __Path__)
     return De ? 1 : 0;
 }
 
-/**
- * @brief Check if a path is a directory
- *
- * Determines whether the specified path refers to a directory.
- *
- * @param __Path__ Path to check
- * @return 1 if directory, 0 otherwise
- */
 int
 VfsIsDir(const char* __Path__)
 {
@@ -2418,14 +1821,6 @@ VfsIsDir(const char* __Path__)
     return (De && De->Node && De->Node->Type == VNodeDIR) ? 1 : 0;
 }
 
-/**
- * @brief Check if a path is a regular file
- *
- * Determines whether the specified path refers to a regular file.
- *
- * @param __Path__ Path to check
- * @return 1 if regular file, 0 otherwise
- */
 int
 VfsIsFile(const char* __Path__)
 {
@@ -2435,14 +1830,6 @@ VfsIsFile(const char* __Path__)
     return (De && De->Node && De->Node->Type == VNodeFILE) ? 1 : 0;
 }
 
-/**
- * @brief Check if a path is a symbolic link
- *
- * Determines whether the specified path refers to a symbolic link.
- *
- * @param __Path__ Path to check
- * @return 1 if symbolic link, 0 otherwise
- */
 int
 VfsIsSymlink(const char* __Path__)
 {
@@ -2452,17 +1839,6 @@ VfsIsSymlink(const char* __Path__)
     return (De && De->Node && De->Node->Type == VNodeSYM) ? 1 : 0;
 }
 
-/**
- * @brief Copy a file from source to destination
- *
- * Copies the contents of the file at __Src__ to the location __Dst__.
- * The destination file is created if it doesn't exist, or truncated if it does.
- *
- * @param __Src__ Source file path
- * @param __Dst__ Destination file path
- * @param __Flags__ Copy flags (currently unused)
- * @return 0 on success, -1 on failure
- */
 int
 VfsCopy(const char* __Src__, const char* __Dst__, long __Flags__)
 {
@@ -2509,17 +1885,6 @@ VfsCopy(const char* __Src__, const char* __Dst__, long __Flags__)
     return 0;
 }
 
-/**
- * @brief Move or rename a file or directory
- *
- * Attempts to rename/move the file or directory from __Src__ to __Dst__.
- * If rename fails (e.g., across filesystems), falls back to copy+delete.
- *
- * @param __Src__ Source path
- * @param __Dst__ Destination path
- * @param __Flags__ Move flags (passed to rename operation)
- * @return 0 on success, -1 on failure
- */
 int
 VfsMove(const char* __Src__, const char* __Dst__, long __Flags__)
 {
@@ -2538,18 +1903,6 @@ VfsMove(const char* __Src__, const char* __Dst__, long __Flags__)
     return VfsUnlink(__Src__);
 }
 
-/**
- * @brief Read entire file into buffer
- *
- * Reads the entire contents of the file at __Path__ into the provided buffer,
- * up to __BufLen__ bytes. The actual number of bytes read is stored in __OutLen__.
- *
- * @param __Path__ Path to the file to read
- * @param __Buf__ Buffer to store file contents
- * @param __BufLen__ Size of the buffer
- * @param __OutLen__ Pointer to store the number of bytes read (may be NULL)
- * @return 0 on success, -1 on failure
- */
 int
 VfsReadAll(const char* __Path__, void* __Buf__, long __BufLen__, long* __OutLen__)
 {
@@ -2583,17 +1936,6 @@ VfsReadAll(const char* __Path__, void* __Buf__, long __BufLen__, long* __OutLen_
     return 0;
 }
 
-/**
- * @brief Write entire buffer to file
- *
- * Writes the entire contents of the buffer to the file at __Path__,
- * creating or truncating the file as needed.
- *
- * @param __Path__ Path to the file to write
- * @param __Buf__ Buffer containing data to write
- * @param __Len__ Number of bytes to write
- * @return 0 on success, -1 on failure
- */
 int
 VfsWriteAll(const char* __Path__, const void* __Buf__, long __Len__)
 {
@@ -2619,16 +1961,6 @@ VfsWriteAll(const char* __Path__, const void* __Buf__, long __Len__)
     return 0;
 }
 
-/**
- * @brief Enumerate mounted filesystems
- *
- * Lists all currently mounted filesystem paths in the provided buffer,
- * separated by newlines.
- *
- * @param __Buf__ Buffer to store the mount table
- * @param __Len__ Size of the buffer
- * @return Number of bytes written, or -1 on failure
- */
 int
 VfsMountTableEnumerate(char* __Buf__, long __Len__)
 {
@@ -2658,17 +1990,6 @@ VfsMountTableEnumerate(char* __Buf__, long __Len__)
     return (int)off;
 }
 
-/**
- * @brief Find a mount point in the mount table
- *
- * Searches for the specified path in the mount table and copies it
- * to the buffer if found.
- *
- * @param __Path__ Path to search for in mount table
- * @param __Buf__ Buffer to store the found path
- * @param __Len__ Size of the buffer
- * @return 0 if found, -1 if not found or buffer too small
- */
 int
 VfsMountTableFind(const char* __Path__, char* __Buf__, long __Len__)
 {
@@ -2694,17 +2015,6 @@ VfsMountTableFind(const char* __Path__, char* __Buf__, long __Len__)
     return -1;
 }
 
-/**
- * @brief Get the full path of a vnode (stub)
- *
- * Retrieves the full path of the given vnode, storing it in the buffer.
- * Currently returns "/" for all vnodes.
- *
- * @param __Node__ Pointer to the vnode
- * @param __Buf__ Buffer to store the path
- * @param __Len__ Size of the buffer
- * @return 0 on success, -1 on failure
- */
 int
 VfsNodePath(Vnode* __Node__, char* __Buf__, long __Len__)
 {
@@ -2725,17 +2035,6 @@ VfsNodePath(Vnode* __Node__, char* __Buf__, long __Len__)
     return 0;
 }
 
-/**
- * @brief Get the name of a vnode (stub)
- *
- * Retrieves the name of the given vnode, storing it in the buffer.
- * Currently returns an empty string for all vnodes.
- *
- * @param __Node__ Pointer to the vnode
- * @param __Buf__ Buffer to store the name
- * @param __Len__ Size of the buffer
- * @return 0 on success, -1 on failure
- */
 int
 VfsNodeName(Vnode* __Node__, char* __Buf__, long __Len__)
 {
@@ -2756,15 +2055,6 @@ VfsNodeName(Vnode* __Node__, char* __Buf__, long __Len__)
     return 0;
 }
 
-/**
- * @brief Allocate memory for a name string
- *
- * Allocates memory for a string of the specified length using the kernel heap.
- *
- * @param __Out__ Pointer to store the allocated string pointer
- * @param __Len__ Length of the string to allocate (including null terminator)
- * @return 0 on success, -1 on failure
- */
 int
 VfsAllocName(char** __Out__, long __Len__)
 {
@@ -2778,14 +2068,6 @@ VfsAllocName(char** __Out__, long __Len__)
     return *__Out__ ? 0 : -1;
 }
 
-/**
- * @brief Free memory allocated for a name string
- *
- * Frees memory that was allocated for a name string using VfsAllocName.
- *
- * @param __Name__ Pointer to the string to free
- * @return 0 on success, -1 if pointer is NULL
- */
 int
 VfsFreeName(char* __Name__)
 {
@@ -2799,18 +2081,6 @@ VfsFreeName(char* __Name__)
     return 0;
 }
 
-/**
- * @brief Join two path components
- *
- * Concatenates two path components with a '/' separator, storing the
- * result in the provided buffer.
- *
- * @param __A__ First path component
- * @param __B__ Second path component
- * @param __Out__ Buffer to store the joined path
- * @param __Len__ Size of the output buffer
- * @return 0 on success, -1 on failure (buffer too small)
- */
 int
 VfsJoinPath(const char* __A__, const char* __B__, char* __Out__, long __Len__)
 {
@@ -2834,16 +2104,6 @@ VfsJoinPath(const char* __A__, const char* __B__, char* __Out__, long __Len__)
     return 0;
 }
 
-/**
- * @brief Set a flag on a file or directory (stub)
- *
- * Sets the specified flag on the file or directory at the given path.
- * Currently not implemented.
- *
- * @param __Path__ Path to the file/directory
- * @param __Flag__ Flag to set
- * @return 0 (stub implementation)
- */
 int
 VfsSetFlag(const char* __Path__, long __Flag__)
 {
@@ -2854,16 +2114,6 @@ VfsSetFlag(const char* __Path__, long __Flag__)
     return 0;
 }
 
-/**
- * @brief Clear a flag on a file or directory (stub)
- *
- * Clears the specified flag on the file or directory at the given path.
- * Currently not implemented.
- *
- * @param __Path__ Path to the file/directory
- * @param __Flag__ Flag to clear
- * @return 0 (stub implementation)
- */
 int
 VfsClearFlag(const char* __Path__, long __Flag__)
 {
@@ -2874,15 +2124,6 @@ VfsClearFlag(const char* __Path__, long __Flag__)
     return 0;
 }
 
-/**
- * @brief Get flags of a file or directory (stub)
- *
- * Retrieves the flags set on the file or directory at the given path.
- * Currently returns 0.
- *
- * @param __Path__ Path to the file/directory
- * @return Current flags (always 0)
- */
 long
 VfsGetFlags(const char* __Path__)
 {
@@ -2892,14 +2133,6 @@ VfsGetFlags(const char* __Path__)
     return 0;
 }
 
-/**
- * @brief Synchronize all mounted filesystems
- *
- * Forces all mounted filesystems to write their cached data to storage.
- * Calls the sync operation on each mounted superblock.
- *
- * @return 0 on success
- */
 int
 VfsSyncAll(void)
 {
@@ -2916,14 +2149,6 @@ VfsSyncAll(void)
     return 0;
 }
 
-/**
- * @brief Prune filesystem caches (stub)
- *
- * Removes unused entries from filesystem caches to free memory.
- * Currently not implemented.
- *
- * @return 0 (stub implementation)
- */
 int
 VfsPruneCaches(void)
 {
@@ -2932,17 +2157,6 @@ VfsPruneCaches(void)
     return 0;
 }
 
-/**
- * @brief Register a device node
- *
- * Registers a device node at the specified path with associated private data.
- * Currently not implemented.
- *
- * @param __Path__ Path where the device node should be created
- * @param __Priv__ Private data associated with the device
- * @param __Flags__ Device flags
- * @return 0 on OK and -1 on FAIL
- */
 int
 VfsRegisterDevNode(const char* __Path__, void* __Priv__, long __Flags__)
 {
@@ -2994,15 +2208,6 @@ VfsRegisterDevNode(const char* __Path__, void* __Priv__, long __Flags__)
     return 0;
 }
 
-/**
- * @brief Unregister a device node (stub)
- *
- * Removes a device node from the specified path.
- * Currently not implemented.
- *
- * @param __Path__ Path of the device node to remove
- * @return 0 (stub implementation)
- */
 int
 VfsUnregisterDevNode(const char* __Path__)
 {
@@ -3012,16 +2217,6 @@ VfsUnregisterDevNode(const char* __Path__)
     return 0;
 }
 
-/**
- * @brief Register a pseudo filesystem
- *
- * Registers a pseudo filesystem (not backed by real storage) at the
- * specified path. The superblock is provided directly.
- *
- * @param __Path__ Mount point path for the pseudo filesystem
- * @param __Sb__ Superblock of the pseudo filesystem
- * @return 0 on success, -1 on failure (invalid parameters or mount table full)
- */
 int
 VfsRegisterPseudoFs(const char* __Path__, Superblock* __Sb__)
 {
@@ -3042,14 +2237,6 @@ VfsRegisterPseudoFs(const char* __Path__, Superblock* __Sb__)
     return 0;
 }
 
-/**
- * @brief Unregister a pseudo filesystem
- *
- * Unregisters a pseudo filesystem by unmounting it from its path.
- *
- * @param __Path__ Mount point path of the pseudo filesystem
- * @return Result of the unmount operation
- */
 int
 VfsUnregisterPseudoFs(const char* __Path__)
 {
@@ -3058,15 +2245,6 @@ VfsUnregisterPseudoFs(const char* __Path__)
     return VfsUnmount(__Path__);
 }
 
-/**
- * @brief Set the default filesystem type
- *
- * Sets the default filesystem type to use when mounting without
- * specifying a type explicitly.
- *
- * @param __Name__ Name of the default filesystem type
- * @return 0 on success, -1 on failure (invalid name or name too long)
- */
 int
 VfsSetDefaultFs(const char* __Name__)
 {
@@ -3085,27 +2263,12 @@ VfsSetDefaultFs(const char* __Name__)
     return 0;
 }
 
-/**
- * @brief Get the default filesystem type
- *
- * Returns the name of the currently set default filesystem type.
- *
- * @return Name of the default filesystem type
- */
 const char*
 VfsGetDefaultFs(void)
 {
     return __DefaultFs__;
 }
 
-/**
- * @brief Set the maximum filename length
- *
- * Sets the maximum allowed length for filenames in the VFS.
- *
- * @param __Len__ Maximum filename length
- * @return 0 on success, -1 if length is invalid
- */
 int
 VfsSetMaxName(long __Len__)
 {
@@ -3119,13 +2282,6 @@ VfsSetMaxName(long __Len__)
     return 0;
 }
 
-/**
- * @brief Get the maximum filename length
- *
- * Returns the current maximum allowed length for filenames.
- *
- * @return Maximum filename length
- */
 long
 VfsGetMaxName(void)
 {
@@ -3134,14 +2290,6 @@ VfsGetMaxName(void)
     return __MaxName__;
 }
 
-/**
- * @brief Set the maximum path length
- *
- * Sets the maximum allowed length for paths in the VFS.
- *
- * @param __Len__ Maximum path length
- * @return 0 on success, -1 if length is invalid
- */
 int
 VfsSetMaxPath(long __Len__)
 {
@@ -3155,13 +2303,6 @@ VfsSetMaxPath(long __Len__)
     return 0;
 }
 
-/**
- * @brief Get the maximum path length
- *
- * Returns the current maximum allowed length for paths.
- *
- * @return Maximum path length
- */
 long
 VfsGetMaxPath(void)
 {
@@ -3170,14 +2311,6 @@ VfsGetMaxPath(void)
     return __MaxPath__;
 }
 
-/**
- * @brief Set the directory cache limit
- *
- * Sets the maximum number of directory entries to cache in the VFS.
- *
- * @param __Val__ Directory cache limit
- * @return 0 on success
- */
 int
 VfsSetDirCacheLimit(long __Val__)
 {
@@ -3187,13 +2320,6 @@ VfsSetDirCacheLimit(long __Val__)
     return 0;
 }
 
-/**
- * @brief Get the directory cache limit
- *
- * Returns the current maximum number of directory entries to cache.
- *
- * @return Directory cache limit
- */
 long
 VfsGetDirCacheLimit(void)
 {
@@ -3202,14 +2328,6 @@ VfsGetDirCacheLimit(void)
     return __DirCacheLimit__;
 }
 
-/**
- * @brief Set the file cache limit
- *
- * Sets the maximum number of file entries to cache in the VFS.
- *
- * @param __Val__ File cache limit
- * @return 0 on success
- */
 int
 VfsSetFileCacheLimit(long __Val__)
 {
@@ -3219,13 +2337,6 @@ VfsSetFileCacheLimit(long __Val__)
     return 0;
 }
 
-/**
- * @brief Get the file cache limit
- *
- * Returns the current maximum number of file entries to cache.
- *
- * @return File cache limit
- */
 long
 VfsGetFileCacheLimit(void)
 {
@@ -3234,14 +2345,6 @@ VfsGetFileCacheLimit(void)
     return __FileCacheLimit__;
 }
 
-/**
- * @brief Set the I/O block size
- *
- * Sets the preferred block size for I/O operations in the VFS.
- *
- * @param __Val__ Block size in bytes
- * @return 0 on success
- */
 int
 VfsSetIoBlockSize(long __Val__)
 {
@@ -3251,13 +2354,6 @@ VfsSetIoBlockSize(long __Val__)
     return 0;
 }
 
-/**
- * @brief Get the I/O block size
- *
- * Returns the preferred I/O block size for filesystem operations.
- *
- * @return I/O block size in bytes
- */
 long
 VfsGetIoBlockSize(void)
 {

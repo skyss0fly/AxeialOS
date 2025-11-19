@@ -1,7 +1,5 @@
 #include <AllTypes.h>
 
-/** @internal Internal String and Libc Functions for the kernel. */
-
 /*Strcpy*/
 void
 StringCopy(char* __Dest__, const char* __Src__, uint32_t __MaxLen__)

@@ -7,7 +7,6 @@
 #include <String.h>
 #include <VFS.h>
 
-/** Disk descriptor (physical block device) */
 typedef struct BlockDisk
 {
     const char* Name;        /* "sda", "sdb" */
@@ -18,7 +17,6 @@ typedef struct BlockDisk
 
 } BlockDisk;
 
-/** Partition descriptor (logical slice on a disk) */
 typedef struct BlockPart
 {
     const char* Name;      /* "sda1", "sda2" */
@@ -30,9 +28,6 @@ typedef struct BlockPart
 
 } BlockPart;
 
-/**
- * Registration
- */
 int BlockRegisterDisk(BlockDisk* __Disk__);
 int BlockRegisterPartition(BlockPart* __Part__);
 int BlockRegisterGPTPartitions(BlockDisk*  __Disk__,
@@ -41,9 +36,6 @@ int BlockRegisterGPTPartitions(BlockDisk*  __Disk__,
                                long        __EntryCount__);
 int BlockRegisterMBRPartitions(BlockDisk* __Disk__, const void* __MbrSector__);
 
-/**
- * Utilities
- */
 int BlockMakeName(char*       __Out__,
                   long        __Cap__,
                   const char* __Prefix__,
@@ -53,9 +45,6 @@ int BlockMakePartName(char*       __Out__,
                       const char* __DiskName__,
                       long        __PartIndex__); /* "sda" + 1 -> "sda1" */
 
-/**
- * Public
- */
 KEXPORT(BlockRegisterDisk);
 KEXPORT(BlockRegisterPartition);
 KEXPORT(BlockRegisterGPTPartitions);

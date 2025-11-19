@@ -5,34 +5,11 @@
 #include <Timer.h>      /* Timer interfaces for per-CPU timer data */
 #include <VMM.h>        /* Virtual Memory Management for address translation */
 
-/** @brief Global CPU Data Array for IDT/GDT */
 PerCpuData CpuDataArray[MaxCPUs];
 
-/**
- * @brief Initialize per-CPU interrupt handling and data structures.
- *
- * @details Sets up the per-CPU environment for the given CPU:
- *			Initializes the kernel stack pointer (Rsp0) in the Task State Segment (TSS).
- *			Copies template GDT and IDT entries into per-CPU structures.
- *			Configures TSS descriptors in the GDT.
- *			Loads the GDT, IDT, and TSS into the CPU using `lgdt`, `lidt`, and `ltr`.
- *			Reloads segment registers to ensure correct privilege levels.
- *			Maps the Local APIC base for this CPU.
- *			Initializes counters for local ticks and interrupts.
- *			Verifies that GDT, IDT, and TSS were loaded correctly.
- *
- * @param __CpuNumber__ Logical CPU number being initialized.
- * @param __StackTop__  Top of the kernel stack allocated for this CPU.
- *
- * @return void
- *
- * @note This function must be called during AP startup to ensure
- *       each CPU has its own interrupt and descriptor tables.
- */
 void
 PerCpuInterruptInit(uint32_t __CpuNumber__, uint64_t __StackTop__)
 {
-
     PerCpuData* CpuData = &CpuDataArray[__CpuNumber__];
 
     PDebug("CPU %u: Initializing per-CPU data at 0x%p\n", __CpuNumber__, CpuData);
@@ -153,17 +130,6 @@ PerCpuInterruptInit(uint32_t __CpuNumber__, uint64_t __StackTop__)
     PSuccess("CPU %u: Per-CPU interrupt handling initialized\n", __CpuNumber__);
 }
 
-/**
- * @brief Retrieve the per-CPU data structure for a given CPU.
- *
- * @details Returns a pointer to the PerCpuData structure associated with
- * 			the specified logical CPU number. This structure contains
- * 			per-CPU GDT, IDT, TSS, APIC base, and counters.
- *
- * @param __CpuNumber__ Logical CPU number.
- *
- * @return Pointer to the PerCpuData structure for the given CPU.
- */
 PerCpuData*
 GetPerCpuData(uint32_t __CpuNumber__)
 {

@@ -3,12 +3,8 @@
 #include <AllTypes.h>
 #include <KExports.h>
 
-/**
- * Spinlock
- */
 typedef struct
 {
-
     volatile uint32_t Lock;
     uint32_t          CpuId;
     const char*       Name;
@@ -21,9 +17,6 @@ void AcquireSpinLock(SpinLock* __Lock__);
 void ReleaseSpinLock(SpinLock* __Lock__);
 bool TryAcquireSpinLock(SpinLock* __Lock__);
 
-/**
- * Mutex
- */
 typedef struct
 {
     volatile uint32_t Lock;
@@ -37,9 +30,6 @@ void AcquireMutex(Mutex* __Mutex__);
 void ReleaseMutex(Mutex* __Mutex__);
 bool TryAcquireMutex(Mutex* __Mutex__);
 
-/**
- * Semaphore
- */
 typedef struct
 {
     volatile int32_t  Count;
@@ -53,14 +43,8 @@ void AcquireSemaphore(Semaphore* __Semaphore__);
 void ReleaseSemaphore(Semaphore* __Semaphore__);
 bool TryAcquireSemaphore(Semaphore* __Semaphore__);
 
-/**
- * Global Console Lock
- */
 extern SpinLock ConsoleLock;
 
-/**
- * Public
- */
 KEXPORT(InitializeSpinLock);
 KEXPORT(AcquireSpinLock);
 KEXPORT(ReleaseSpinLock);

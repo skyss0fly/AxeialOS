@@ -5,16 +5,6 @@
 #include <Timer.h>      /* Global timer management structures */
 #include <VMM.h>        /* Virtual memory mapping functions */
 
-/**
- * @brief Check if the CPU supports APIC.
- *
- * @details Executes the CPUID instruction (leaf 1) and inspects the APIC bit
- * 			in the EDX register. If the bit is set, the CPU supports APIC.
- *
- * @return 1 if APIC is supported, 0 otherwise.
- *
- * @note Used internally by APIC timer detection.
- */
 static int
 CheckApicSupport(void)
 {
@@ -32,18 +22,6 @@ CheckApicSupport(void)
     return 1;
 }
 
-/**
- * @brief Detect the presence of an APIC timer.
- *
- * @details Reads the APIC base MSR to determine if the APIC is enabled.
- * 			If disabled, attempts to enable it. Validates the APIC version
- * 			register and ensures that the Local Vector Table (LVT) supports
- * 			a timer entry.
- *
- * @return 1 if the APIC timer is detected successfully, 0 otherwise.
- *
- * @note Must be called before initializing the APIC timer.
- */
 int
 DetectApicTimer(void)
 {
@@ -102,20 +80,6 @@ DetectApicTimer(void)
     return 1;
 }
 
-/**
- * @brief Initialize the APIC timer.
- *
- * @details Configures the Local APIC timer for periodic interrupts:
- * 			Disables interrupts during setup.
- * 			Programs spurious interrupt register and timer divide configuration.
- * 			Measures APIC frequency by calibrating against a short delay.
- * 			Sets the initial count for periodic interrupts based on target frequency.
- * 			Updates per-CPU APIC base addresses.
- *
- * @return 1 on successful initialization, 0 otherwise.
- *
- * @note This function enables the APIC timer as the active system timer.
- */
 int
 InitializeApicTimer(void)
 {

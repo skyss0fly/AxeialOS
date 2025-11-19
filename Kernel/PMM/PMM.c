@@ -1,16 +1,7 @@
 #include <PMM.h>
 
-/** @brief Global PMM state */
 PhysicalMemoryManager Pmm = {0};
 
-/**
- * @brief Find the next free physical page.
- *
- * @details Searches the allocation bitmap for a free page, starting from the
- * 			last allocation hint. Wraps around if necessary.
- *
- * @return Index of the free page, or PmmBitmapNotFound if none available.
- */
 uint64_t
 FindFreePage(void)
 {
@@ -39,19 +30,6 @@ FindFreePage(void)
     return PmmBitmapNotFound;
 }
 
-/**
- * @brief Initialize the Physical Memory Manager.
- *
- * @details Retrieves HHDM offset from Limine.
- * 			Parses the system memory map.
- * 			Initializes the allocation bitmap.
- * 			Marks memory regions as used/free.
- * 			Calculates memory statistics.
- *
- * @return void
- *
- * @note Must be called during kernel initialization before any allocations.
- */
 void
 InitializePmm(void)
 {
@@ -87,30 +65,26 @@ InitializePmm(void)
 
     /*Calculate final memory statistics*/
     Pmm.Stats.TotalPages = Pmm.TotalPages;
-    Pmm.Stats.UsedPages = 0;
-    Pmm.Stats.FreePages = 0;
+    Pmm.Stats.UsedPages  = 0;
+    Pmm.Stats.FreePages  = 0;
 
     for (uint64_t Index = 0; Index < Pmm.TotalPages; Index++)
     {
         if (TestBitmapBit(Index))
+        {
             Pmm.Stats.UsedPages++;
+        }
         else
+        {
             Pmm.Stats.FreePages++;
+        }
     }
 
     PSuccess("PMM initialized: %lu MB total, %lu MB free\n",
-    (Pmm.Stats.TotalPages * PageSize) / (1024 * 1024),
-    (Pmm.Stats.FreePages * PageSize) / (1024 * 1024));
+             (Pmm.Stats.TotalPages * PageSize) / (1024 * 1024),
+             (Pmm.Stats.FreePages * PageSize) / (1024 * 1024));
 }
 
-/**
- * @brief Allocate a single physical page.
- *
- * @details Finds a free page, marks it as used in the bitmap, updates statistics,
- * 			and returns its physical address.
- *
- * @return Physical address of the allocated page, or 0 if none available.
- */
 uint64_t
 AllocPage(void)
 {
@@ -133,16 +107,6 @@ AllocPage(void)
     return PhysAddr;
 }
 
-/**
- * @brief Free a single physical page.
- *
- * @details Validates the physical address, checks for double free,
- * 			clears the bitmap entry, and updates statistics.
- *
- * @param __PhysAddr__ Physical address of the page to free.
- *
- * @return void
- */
 void
 FreePage(uint64_t __PhysAddr__)
 {
@@ -168,16 +132,6 @@ FreePage(uint64_t __PhysAddr__)
     PDebug("Freed page: 0x%016lx (index %lu)\n", __PhysAddr__, PageIndex);
 }
 
-/**
- * @brief Allocate multiple contiguous physical pages.
- *
- * @details Searches for a contiguous block of free pages of the requested size.
- * 			Marks them as used and returns the base physical address.
- *
- * @param __Count__ Number of pages to allocate.
- *
- * @return Physical base address of the allocated block, or 0 if failed.
- */
 uint64_t
 AllocPages(size_t __Count__)
 {
@@ -188,11 +142,15 @@ AllocPages(size_t __Count__)
     }
 
     if (__Count__ == 1)
+    {
         return AllocPage();
+    }
 
     if (__Count__ > Pmm.Stats.FreePages)
     {
-        PError("Not enough free pages: requested %lu, available %lu\n", __Count__, Pmm.Stats.FreePages);
+        PError("Not enough free pages: requested %lu, available %lu\n",
+               __Count__,
+               Pmm.Stats.FreePages);
         return 0;
     }
 
@@ -217,7 +175,9 @@ AllocPages(size_t __Count__)
         {
             /*Mark all pages in block as used*/
             for (size_t Offset = 0; Offset < __Count__; Offset++)
+            {
                 SetBitmapBit(StartIndex + Offset);
+            }
 
             Pmm.Stats.UsedPages += __Count__;
             Pmm.Stats.FreePages -= __Count__;
@@ -233,16 +193,6 @@ AllocPages(size_t __Count__)
     return 0;
 }
 
-/**
- * @brief Free multiple contiguous physical pages.
- *
- * @details Frees each page in the block individually, updating statistics.
- *
- * @param __PhysAddr__ Base physical address of the block.
- * @param __Count__    Number of pages to free.
- *
- * @return void
- */
 void
 FreePages(uint64_t __PhysAddr__, size_t __Count__)
 {
@@ -256,19 +206,11 @@ FreePages(uint64_t __PhysAddr__, size_t __Count__)
 
     /*Free each page individually*/
     for (size_t Index = 0; Index < __Count__; Index++)
+    {
         FreePage(__PhysAddr__ + (Index * PageSize));
+    }
 }
 
-/**
- * @brief Validate a physical page address.
- *
- * @details Checks that the address is non-zero, page-aligned, and within
- * 			the total page count managed by the PMM.
- *
- * @param __PhysAddr__ Physical address to validate.
- *
- * @return 1 if valid, 0 otherwise.
- */
 int
 PmmValidatePage(uint64_t __PhysAddr__)
 {

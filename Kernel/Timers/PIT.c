@@ -1,19 +1,5 @@
 #include <Timer.h> /* Timer management structures and constants */
 
-/**
- * @brief Initialize the Programmable Interval Timer (PIT).
- *
- * @details Configures the PIT (channel 0) to generate periodic interrupts
- * 			at the target frequency specified by @c TimerTargetFrequency.
- * 			The divisor is calculated from the PIT base frequency (1,193,182 Hz)
- * 			and programmed into the PIT control registers.
- *
- * @return 1 on successful initialization.
- *
- * @note This function is used as a fallback if APIC or HPET timers
- *       are not available. The PIT is legacy hardware but ensures
- *       basic timer functionality.
- */
 int
 InitializePitTimer(void)
 {
