@@ -346,6 +346,7 @@ RamVfsReaddir(Vnode* __Dir__, void* __Buf__, long __BufLen__)
     return Wrote; /* return count of entries */
 }
 
+/** Fixed this shi because it wasn't looking inside childrens*/
 Vnode*
 RamVfsLookup(Vnode* __Dir__, const char* __Name__)
 {
@@ -355,37 +356,25 @@ RamVfsLookup(Vnode* __Dir__, const char* __Name__)
     }
 
     RamVfsPrivNode* PN = (RamVfsPrivNode*)__Dir__->Priv;
-    if (!PN || !PN->Node)
+    if (!PN || !PN->Node || PN->Node->Type != RamFSNode_Directory)
     {
         return 0;
     }
 
-    if (PN->Node->Type != RamFSNode_Directory)
+    RamFSNode* Child = 0;
+    for (uint32_t I = 0; I < PN->Node->ChildCount; I++)
     {
-        return 0;
+        RamFSNode* C = PN->Node->Children[I];
+        if (!C || !C->Name)
+        {
+            continue;
+        }
+        if (strcmp(C->Name, __Name__) == 0)
+        {
+            Child = C;
+            break;
+        }
     }
-
-    char        Path[512];
-    long        L  = 0;
-    const char* DN = PN->Node->Name ? PN->Node->Name : "/";
-    while (DN[L] && L < 511)
-    {
-        Path[L] = DN[L];
-        L++;
-    }
-    if (L == 0 || Path[L - 1] != '/')
-    {
-        Path[L++] = '/';
-    }
-    long N = 0;
-    while (__Name__[N] && L + N < 511)
-    {
-        Path[L + N] = __Name__[N];
-        N++;
-    }
-    Path[L + N] = 0;
-
-    RamFSNode* Child = RamFSLookup(RamFS.Root, Path);
     if (!Child)
     {
         return 0;

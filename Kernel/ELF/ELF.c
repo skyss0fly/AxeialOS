@@ -255,9 +255,9 @@ ElfMapLoadSegment(VirtualMemorySpace* __Space__,
             PError("Elf: KMalloc bounce failed\n");
             return -1;
         }
-        for (uint64_t i = 0; i < mem_end_in_page; i++)
+        for (uint64_t I = 0; I < mem_end_in_page; I++)
         {
-            Bounce[i] = 0;
+            Bounce[I] = 0;
         }
 
         /* Copy file-backed bytes if present */
@@ -286,9 +286,9 @@ ElfMapLoadSegment(VirtualMemorySpace* __Space__,
 
         /* Write bounce into mapped physical page */
         volatile char* KPage = (volatile char*)PhysToVirt(Phys);
-        for (uint64_t i = 0; i < mem_end_in_page; i++)
+        for (uint64_t I = 0; I < mem_end_in_page; I++)
         {
-            KPage[i] = Bounce[i];
+            KPage[I] = Bounce[I];
         }
         /* If mem_end_in_page < PageSize, leave the remainder untouched (outside segment) */
 

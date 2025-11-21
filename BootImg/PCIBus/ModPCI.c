@@ -2,7 +2,7 @@
 
 PciCtrlCtx* PciCtxHeap = NULL;
 CharBus*    PciBus     = NULL;
-uint64_t    PciCanary  = 0xA55AC0DECAFEBABEULL;
+uint64_t    PciCanary  = 0xA55AC0DECAFEBABEULL;/*Alignment check*/
 
 uint32_t
 PciReadBarRaw(PciCtrlCtx* __Ctx__, int __Bus__, int __Dev__, int __Func__, int __Index__)

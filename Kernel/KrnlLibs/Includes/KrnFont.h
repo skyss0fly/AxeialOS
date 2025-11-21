@@ -6,8 +6,8 @@
 
 /*F016*/
 #ifdef __F16
-#define FontW 8
-#define FontH 16
+#    define FontW 8
+#    define FontH 16
 #endif
 
 /*maxsize of the bitmap*/
@@ -15,7 +15,7 @@
 /*max amount of entries in the bitmap*/
 #define MaxFontEntries 256
 
-extern const uint8_t KrnlFontMap[256][16];
+extern const uint8_t KrnlFontMap[MaxFontEntries][MaxFontMap];
 
 void DisplayChar(uint32_t* __FrameBuffer__,
                  uint32_t  __FrameBufferW__,

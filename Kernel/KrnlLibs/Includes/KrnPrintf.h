@@ -43,12 +43,12 @@ typedef struct
 #define ClrDebug     0x808080
 
 #ifdef DEBUG
-#define PDebug(fmt, ...) _PDebug(fmt, ##__VA_ARGS__)
+#    define PDebug(fmt, ...) _PDebug(fmt, ##__VA_ARGS__)
 #else
-#define PDebug(fmt, ...)                                                                           \
-    do                                                                                             \
-    {                                                                                              \
-    } while (0)
+#    define PDebug(fmt, ...)                                                                       \
+        do                                                                                         \
+        {                                                                                          \
+        } while (0)
 #endif
 
 /*Main*/
