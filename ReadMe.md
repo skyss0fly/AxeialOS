@@ -1,5 +1,6 @@
 # Note: this Branch is an Unofficial Rewrite of AxeialOS Rewritten for RustLang. I've also cleaned up the branch to automate the building and testing process.
 ## README INCOMPLETE
+## NOTE: IM WORKING ON THIS LOCALLY SO YOU WONT SEE REWRITE ANY TIME SOON
 # Bootloader:
 This Fork uses the Limine Bootloader
 
